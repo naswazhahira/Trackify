@@ -1,11 +1,11 @@
 **Nama Kelompok : Kelompok Org Hebat.**
 
 Anggota Kelompok :
-Naswa Zhahira	241401059
-Yesi Jelita Sinaga	241401071	
-Jonaldy Bensharon Simamora	241401074
-Badzlina Atika Salsabila	241401113
-Grace Claudia Silitonga	241401128
+- Naswa Zhahira -	241401059
+- Yesi Jelita Sinaga - 241401071	
+- Jonaldy Bensharon Simamora - 241401074
+- Badzlina Atika Salsabila	- 241401113
+- Grace Claudia Silitonga	- 241401128
 
 # Trackify
 Trackify adalah aplikasi berbasis website yang dirancang untuk membantu pengguna memantau aktivitas harian
