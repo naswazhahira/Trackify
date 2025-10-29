@@ -28,7 +28,7 @@ body {
 }
 
 
-/* ==================== NAVBAR STYLES ==================== */
+/* tampilan navbar */
 .navbar-main {
     width: 100%;
     position: fixed;
@@ -84,7 +84,7 @@ body {
 }
 
 
-/* ==================== SIDEBAR STYLES - DIPERBAIKI ==================== */
+/* tampilan menu samping (sidebar) */
 .sidebar {
     position: fixed;
     left: -300px;
@@ -236,7 +236,7 @@ body {
 }
 
 
-/* ==================== NAVBAR PROFILE STYLES ==================== */
+/* tampilan profile di navbar*/
 .profile-icon {
     color: var(--primary-color);
     font-size: 32px;
@@ -276,7 +276,7 @@ body {
 }
 
 
-/* ==================== MAIN CONTENT ==================== */
+/* tampilan halaman utama */
 .home-section {
     padding: 70px 30px 30px;
     min-height: 100vh;
@@ -338,7 +338,7 @@ body {
 }
 
 
-/* ==================== DASHBOARD GRID - LAYOUT DIPERBAIKI ==================== */
+/* kolase dashboard */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -462,7 +462,7 @@ body {
 }
 
 
-/* ==================== CALENDAR STYLES ==================== */
+/* tampilan kalender */
 .calendar-mini {
     text-align: center;
 }
@@ -581,7 +581,7 @@ body {
 }
 
 
-/* ==================== TO-DO LIST STYLES ==================== */
+/* tampilan to-do list */
 .todo-list {
     max-height: 250px;
     overflow-y: auto;
@@ -677,7 +677,7 @@ body {
 }
 
 
-/* ==================== SCHEDULE STYLES ==================== */
+/* tampilan agenda */
 .schedule-list {
     max-height: 250px;
     overflow-y: auto;
@@ -766,7 +766,7 @@ body {
 }
 
 
-/* ==================== PROGRESS CHART STYLES - DIPERBAIKI ==================== */
+/* tampilan grafik proses */
 .dashboard-card.progress-card {
     min-height: 280px;
 }
@@ -933,7 +933,7 @@ body {
 }
 
 
-/* ==================== QUICK ACTIONS CARD - DIPERBAIKI ==================== */
+/* tampilan kartu quick action= */
 .dashboard-card.actions-card {
     min-height: 280px;
     display: flex;
@@ -996,7 +996,7 @@ body {
 }
 
 
-/* ==================== RESPONSIVE DESIGN ==================== */
+/* desain responsif */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1181,7 +1181,7 @@ body {
 }
 
 
-/* ==================== ANIMATIONS ==================== */
+/* =animasi */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1224,4 +1224,5 @@ body {
 .sidebar {
     animation: slideInLeft 0.4s ease;
 }
+
 
