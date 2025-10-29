@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackify</title>
+  <link rel="stylesheet" href="timer.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+        <span>Trackify</span>
+        <a href="#" class="close-sidebar" id="closeSidebar">
+            <i class='bx bx-x'></i>
+        </a>
+        </div>
+        <ul class="sidebar-menu">
+        <li><a href="beranda.html"><i class="fas fa-qrcode"></i>Beranda</a></li>
+        <li><a href="jadwal.html"><i class="fas fa-calendar-alt"></i>Agenda</a></li>
+        <li><a href="timer.html"><i class="fas fa-clock"></i>Mode Fokus</a></li>
+        <li><a href="repository.html"><i class="fas fa-folder"></i>Repository</a></li>
+        </ul>
+    </nav>
+
+    <!-- Overlay untuk menutup sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <nav>
+        <div class="wrapper">
+            <div class="wrapper-nav">
+                <a href="#" class="hamburger-icon" id="hamburgerIcon"><i class='bx bx-menu'></i></a>
+                <span class="nav-title">Mode Fokus</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pemilihan tanggal -->
+    <div class="date-selector">
+        <button class="date-nav" id="prevDate"><i class='bx bx-chevron-left'></i></button>
+        <div class="current-date" id="currentDate">Loading...</div>
+        <button class="date-nav" id="nextDate"><i class='bx bx-chevron-right'></i></button>
+    </div>
+
+    <div class="container">
+        <!-- Timer total per hari -->
+        <div class="box left">
+            <div class="total-timer-label">Total Waktu Belajar Hari Ini</div>
+            <div class="total-timer">00:00:00</div>
+        </div>
+
+        <!-- Target belajar -->
+        <div class="box right">
+            <h2>Target Belajar</h2>
+            <div class="goals-container" id="goalsContainer">
+                <!-- Target akan muncul di sini secara dinamis -->
+            </div>
+            <div class="add-goal">
+                <i class='bx bx-plus'></i>
+            </div>
+        </div>
+
+        <!-- Grafik Mingguan -->
+        <div class="box chart">
+            <h2>Grafik Mingguan</h2>
+            <div class="chart-container">
+                <div class="weekly-chart" id="weeklyChart">
+                    <!-- Diagram batang akan muncul di sini -->
+                </div>
+                <div class="chart-tooltip" id="chartTooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay Background -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Tambah target -->
+    <div class="add-goal-modal" id="addGoalModal">
+        <div class="modal-header">
+            <h2>Tambah Target</h2>
+            <span class="close-modal" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-content">
+            <div class="form-group">
+                <label for="goalTitle">Judul Target</label>
+                <input type="text" id="goalTitle" placeholder="Masukkan judul target">
+            </div>
+            <div class="form-group">
+                <label for="dailyGoalTime">Target Waktu Belajar Harian</label>
+                <input type="time" id="dailyGoalTime">
+            </div>
+            <div class="form-group">
+                <label for="selectPeriod">Pilih Periode</label>
+                <input type="date" id="selectPeriod">
+            </div>
+            <button class="save-btn" id="saveGoal">Simpan</button>
+        </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-modal" id="timerModal">
+        <div class="timer-modal-content">
+            <div class="modal-header">
+                <h3>Sesi Fokus</h3>
+                <span class="close-timer-modal" id="closeTimerModal">&times;</span>
+            </div>
+            <div class="timer-display" id="activeTimer">00:00:00</div>
+            <div class="goal-info-modal">
+                <h3 id="activeGoalName">Nama Target</h3>
+                <p>Target: <span id="activeGoalTime">00:00:00</span></p>
+            </div>
+            <div class="timer-controls">
+                <button class="timer-btn start-btn" id="startTimer">Mulai</button>
+                <button class="timer-btn stop-btn" id="stopTimer" disabled>Berhenti</button>
+            </div>
+            <div class="timer-status" id="timerStatus">
+                Waktu dihentikan - Anda dapat menutup jendela ini
+            </div>
+        </div>
+    </div>
+
+    <!-- Hapus target -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hapus Target</h2>
+            </div>
+            <p id="confirmMessage">Apakah Anda yakin ingin menghapus target ini?</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn confirm-no" id="confirmNo">Batal</button>
+                <button class="confirm-btn confirm-yes" id="confirmYes">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="timer.js"></script>
+</body>
+</html>
