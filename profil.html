@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil</title>
+  <link rel="stylesheet" href="profile.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <nav>
+        <div class="wrapper">
+            <div class="wrapper-nav">
+                <a href="#" class="back-icon" id="backButton"><i class='bx bx-arrow-back'></i></a>
+                <span class="nav-title">Profil</span>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <section class="profile-card">
+            <div class="avatar-section">
+                <div class="avatar">
+                    <img src="tulusm.jpg" alt="ProfPic">
+                    <div class="icon">+</div>
+                </div>
+            </div>
+
+
+            <div class="profile-info">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <div class="input-display">
+                        <p id="emailDisplay">mtulus321@gmail.com</p>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <label for="username">Nama Pengguna</label>
+                    <div class="input-display">
+                        <p id="usernameDisplay">tulusm08</p>
+                    </div>
+                </div>
+
+
+                <div class="action-buttons">
+                    <button id="editButton" class="edit-btn">
+                        <i class='bx bx-edit'></i> Edit Profil
+                    </button>
+                    <button id="deleteButton" class="delete-btn">
+                        <i class='bx bx-trash'></i> Hapus Akun
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- Edit Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pengaturan Akun</h2>
+                <span class="close-modal" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <button id="changeUsername" class="modal-option">
+                    <i class='bx bx-user'></i>
+                    <span>Ganti Username</span>
+                </button>
+                <button id="changePassword" class="modal-option">
+                    <i class='bx bx-lock-alt'></i>
+                    <span>Ganti Password</span>
+                </button>
+                <button id="forgotPassword" class="modal-option">
+                    <i class='bx bx-key'></i>
+                    <span>Lupa Password</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Ganti Username -->
+    <div id="usernameModal" class="input-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ganti Username</h2>
+                <span class="close-modal" id="closeUsernameModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="newUsername">Username Baru</label>
+                    <input type="text" id="newUsername" placeholder="Masukkan username baru">
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="cancelUsername">Batal</button>
+                    <button class="modal-btn submit" id="submitUsername">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Ganti Password -->
+    <div id="passwordModal" class="input-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ganti Password</h2>
+                <span class="close-modal" id="closePasswordModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="currentPassword">Password Saat Ini</label>
+                    <input type="password" id="currentPassword" placeholder="Masukkan password saat ini">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">Password Baru</label>
+                    <input type="password" id="newPassword" placeholder="Masukkan password baru (minimal 6 karakter)">
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Konfirmasi Password Baru</label>
+                    <input type="password" id="confirmPassword" placeholder="Konfirmasi password baru">
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="cancelPassword">Batal</button>
+                    <button class="modal-btn submit" id="submitPassword">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Lupa Password -->
+    <div id="forgotPasswordModal" class="input-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Lupa Password</h2>
+                <span class="close-modal" id="closeForgotPasswordModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Link reset password akan dikirim ke email Anda:</p>
+                <div class="input-group">
+                    <label for="emailForgot">Email</label>
+                    <input type="email" id="emailForgot" readonly>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="cancelForgotPassword">Batal</button>
+                    <button class="modal-btn submit" id="submitForgotPassword">Kirim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Confirm Delete Modal -->
+    <div id="confirmDeleteModal" class="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hapus Akun</h2>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus akun ini? Tindakan ini tidak dapat dibatalkan.</p>
+                <div class="confirm-buttons">
+                    <button class="confirm-btn confirm-no" id="confirmNo">Batal</button>
+                    <button class="confirm-btn confirm-yes" id="confirmYes">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="profile.js"></script>
+</body>
+</html>
+
