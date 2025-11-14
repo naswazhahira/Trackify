@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trackify - Login dan Registrasi</title>
-    <link rel="stylesheet" href="regis.css">
+    <link rel="stylesheet" href="assets/css/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -17,21 +17,22 @@
                     <h2>Selamat Datang di <span class="highlight">Trackify</span></h2>
                     <p class="subtitle">Platform Manajemen Waktu dan Produktivitas Terbaik untuk Mahasiswa</p>
                    
+                    <!-- Perbaikan ikon menjadi non-italic -->
                     <div class="features">
                         <div class="feature-item">
-                            <i class="feature-icon">⏰</i>
+                            <p class="feature-icon">⏰</p>
                             <span>Kelola jadwal kuliah dengan mudah</span>
                         </div>
                         <div class="feature-item">
-                            <i class="feature-icon">🎯</i>
+                            <p class="feature-icon">🎯</p>
                             <span>Atur target belajar harian</span>
                         </div>
                         <div class="feature-item">
-                            <i class="feature-icon">📊</i>
+                            <p class="feature-icon">📊</p>
                             <span>Pantau progress akademik</span>
                         </div>
                         <div class="feature-item">
-                            <i class="feature-icon">📁</i>
+                            <p class="feature-icon">📁</p>
                             <span>Simpan materi kuliah dengan rapi</span>
                         </div>
                     </div>
@@ -50,18 +51,18 @@
                 <!-- Panel login -->
                 <section id="panelLogin" class="tampil" aria-label="Formulir Login">
                     <header class="kepalaHalaman">
-                        <h1>Masuk ke Akun</h1>
+                        <h1>Masuk ke Trackify</h1>
                         <p>Silakan masukkan nama pengguna dan kata sandi Anda untuk melanjutkan</p>
                     </header>
 
                     <form id="formLogin" autocomplete="off" novalidate>
                         <div class="form-group">
-                            <label for="login-username">Nama Pengguna</label>
+                            <label for="login-username">Nama pengguna</label>
                             <input type="text" id="login-username" name="username" placeholder="Masukkan Nama Pengguna" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="login-password">Kata Sandi</label>
+                            <label for="login-password">Kata sandi</label>
                             <input type="password" id="login-password" name="password" placeholder="Masukkan Kata Sandi" required minlength="5">
                         </div>
 
@@ -170,6 +171,6 @@
         </div>
     </div>
 
-    <script src="regis.js"></script>
+    <script src="/assets/js/login.js"></script>
 </body>
 </html>
