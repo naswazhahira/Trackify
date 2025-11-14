@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Beranda.js dimuat');
    
-    // Fungsionalitas Sidebar
+    // ==================== SIDEBAR FUNCTIONALITY ====================
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const closeSidebar = document.getElementById('closeSidebar');
     const sidebar = document.getElementById('sidebar');
@@ -63,14 +63,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    // inisialisasi komponen dashboard
+    // ==================== INISIALISASI KOMPONEN DASHBOARD ====================
     initializeCalendar();
     initializeTodo();
     initializeProgressChart();
 });
 
 
-// kalender mini
+// ==================== FUNGSI KALENDER MINI ====================
 function initializeCalendar() {
     const calendarDays = document.querySelector('.calendar-days');
     const monthYear = document.querySelector('.month-year');
@@ -163,7 +163,7 @@ function initializeCalendar() {
 }
 
 
-//FUNGSI TO-DO 
+// ==================== FUNGSI TO-DO ====================
 function initializeTodo() {
     const todoCheckboxes = document.querySelectorAll('.todo-item input[type="checkbox"]');
     const noTasks = document.querySelector('.no-tasks');
@@ -214,7 +214,8 @@ function initializeTodo() {
 }
 
 
-// animasi efek grafik & progress chart
+// ==================== ANIMASI EFEK GRAFIK ====================
+// ==================== ANIMASI PROGRESS CHART ====================
 function initializeProgressChart() {
     const chartBars = document.querySelectorAll('.chart-bar .bar-fill');
    
@@ -258,7 +259,7 @@ function initializeProgressChart() {
 }
 
 
-// smooth scroll 
+// ==================== SMOOTH SCROLL ====================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -272,7 +273,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 
-// fitur tambahan
+// ==================== FITUR TAMBAHAN ====================
 // Auto-update waktu real-time untuk todo items
 function updateTodoTimes() {
     const todoTimes = document.querySelectorAll('.todo-time');
@@ -303,5 +304,4 @@ function updateTodoTimes() {
 
 // Panggil setiap jam
 setInterval(updateTodoTimes, 3600000);
-
 
