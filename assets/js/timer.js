@@ -363,25 +363,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showTargetReachedNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'target-notification';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">🎉</span>
-                <div class="notification-text">
-                    <strong>Target Tercapai!</strong>
-                    <p>Anda telah mencapai target waktu untuk "${activeGoal.title}"</p>
-                </div>
+    // Buat overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'notification-overlay active';
+    
+    // Buat notifikasi
+    const notification = document.createElement('div');
+    notification.className = 'target-notification';
+    notification.innerHTML = `
+        <button class="close-notification">&times;</button>
+        <div class="notification-content">
+            <span class="notification-icon">🎉</span>
+            <div class="notification-text">
+                <strong>Target Tercapai!</strong>
+                <p>Selamat! Anda telah mencapai target waktu belajar untuk "${activeGoal.title}"</p>
             </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
+        </div>
+    `;
+    
+    // Tambahkan ke body
+    document.body.appendChild(overlay);
+    document.body.appendChild(notification);
+    
+    // Fungsi untuk menutup notifikasi
+    function closeNotification() {
+        notification.style.animation = 'slideInDown 0.5s ease reverse';
         setTimeout(() => {
-            notification.remove();
-        }, 5000);
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
     }
-
+    
+    // Event listener untuk tombol close
+    const closeBtn = notification.querySelector('.close-notification');
+    closeBtn.addEventListener('click', closeNotification);
+    
+    // Event listener untuk overlay (klik di luar notifikasi)
+    overlay.addEventListener('click', closeNotification);
+    
+    // Hapus timeout auto close - notifikasi hanya akan hilang jika diclose manual
+}
     // Function status waktu
     function updateTimerStatus() {
         const timerStatus = document.getElementById('timerStatus');
