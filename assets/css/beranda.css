@@ -28,7 +28,7 @@ body {
 }
 
 
-/* tampilan navbar */
+/* navbar */
 .navbar-main {
     width: 100%;
     position: fixed;
@@ -84,7 +84,7 @@ body {
 }
 
 
-/* tampilan menu samping (sidebar) */
+/*  sidebar */
 .sidebar {
     position: fixed;
     left: -300px;
@@ -236,9 +236,9 @@ body {
 }
 
 
-/* tampilan profile di navbar*/
+/* Navbar profile */
 .profile-icon {
-    color: var(--primary-color);
+     color: var(--primary-color);
     font-size: 32px;
     display: flex;
     align-items: center;
@@ -250,9 +250,8 @@ body {
     height: 45px;
     justify-content: center;
     border: 2px solid transparent;
-    margin-left: auto; /* Pushes to the right */
+    margin-left: auto; /* geser ke kanan*/
 }
-
 
 .profile-icon:hover {
     color: #667eea;
@@ -276,7 +275,7 @@ body {
 }
 
 
-/* tampilan halaman utama */
+/* main content */
 .home-section {
     padding: 70px 30px 30px;
     min-height: 100vh;
@@ -286,7 +285,7 @@ body {
 }
 
 
-/* Welcome Banner */
+/* Welcome */
 .welcome-banner {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.9));
     backdrop-filter: blur(10px);
@@ -338,7 +337,7 @@ body {
 }
 
 
-/* kolase dashboard */
+/* Dashboard Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -368,7 +367,7 @@ body {
 }
 
 
-/* Dua card bawah - dilebarkan */
+/* Dua card bawah  */
 .dashboard-card.progress-card {
     grid-column: 1 / span 2;
     grid-row: 2;
@@ -462,126 +461,177 @@ body {
 }
 
 
-/* tampilan kalender */
+/* calendar */
+/* calendar - DIKOREKSI */
 .calendar-mini {
     text-align: center;
+    border: 2px solid rgba(158, 198, 243, 0.3);
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
-
 
 .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-}
-
-
-.nav-btn {
+    margin-bottom: 0;
+    padding: 15px 20px;
     background: linear-gradient(135deg, var(--primary-color), #667eea);
     color: white;
+}
+
+.month-year {
+    font-weight: 600;
+    color: white;
+    font-size: 1.1em;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     border: none;
-    border-radius: 50%;
     width: 35px;
     height: 35px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(10px);
 }
-
 
 .nav-btn:hover {
-    transform: scale(1.1) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
-
-
-.month-year {
-    font-weight: 600;
-    color: #333;
-    font-size: 1.1em;
-}
-
 
 .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: #666;
-    font-size: 0.9em;
+    margin: 15px 0 10px 0;
+    padding: 0 15px;
 }
 
+.calendar-weekdays div {
+    text-align: center;
+    padding: 8px 5px;
+    background: rgba(158, 198, 243, 0.1);
+    border-radius: 10px;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.85em;
+}
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+    padding: 0 15px 15px 15px;
 }
-
 
 .calendar-day {
-    height: 40px;
+    aspect-ratio: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    border-radius: 50%;
+    align-items: center;
+    background: var(--bg-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9em;
-    font-weight: 500;
-    background: rgba(158, 198, 243, 0.1);
+    border: 2px solid transparent;
+    font-weight: 600;
+    color: var(--text-color);
 }
-
 
 .calendar-day:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: scale(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
 }
-
 
 .calendar-day.today {
     background: linear-gradient(135deg, var(--primary-color), #667eea);
     color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
-
 
 .calendar-day.event {
-    position: relative;
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+    color: white;
 }
 
 
-.calendar-day.event::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 5px;
-    height: 5px;
-    background: var(--accent-color);
-    border-radius: 50%;
-}
-
-
+/*perbaikan*/
 .calendar-day.empty {
     background: transparent;
+    border: 2px solid transparent;
+    box-shadow: none;
     cursor: default;
 }
 
-
 .calendar-day.empty:hover {
-    background: transparent;
     transform: none;
+    background: transparent;
+    border-color: transparent;
+}
+
+/* Event badge untuk hari dengan event */
+.event-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: auto;
+    height: 18px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 6px;
+    gap: 2px;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.calendar-day.today .event-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color);
+}
+
+.calendar-day.event .event-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #43e97b;
 }
 
 
-/* tampilan to-do list */
+/* Warna khusus untuk hari Minggu dan Sabtu */
+.calendar-weekdays div:first-child,
+.calendar-day:nth-child(7n+1) {
+    color: #ff6b6b;
+}
+
+.calendar-weekdays div:nth-child(7),
+.calendar-day:nth-child(7n) {
+    color: #667eea;
+}
+
+.calendar-day.today:nth-child(7n+1),
+.calendar-day.today:nth-child(7n) {
+    color: white;
+}
+
+
+
+
+/* to-do list */
 .todo-list {
     max-height: 250px;
     overflow-y: auto;
@@ -677,7 +727,7 @@ body {
 }
 
 
-/* tampilan agenda */
+/* schedule */
 .schedule-list {
     max-height: 250px;
     overflow-y: auto;
@@ -766,7 +816,7 @@ body {
 }
 
 
-/* tampilan grafik proses */
+/* progress chart */
 .dashboard-card.progress-card {
     min-height: 280px;
 }
@@ -933,7 +983,7 @@ body {
 }
 
 
-/* tampilan kartu quick action= */
+/* quick action cards */
 .dashboard-card.actions-card {
     min-height: 280px;
     display: flex;
@@ -996,7 +1046,7 @@ body {
 }
 
 
-/* desain responsif */
+/* responsive design */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1181,7 +1231,7 @@ body {
 }
 
 
-/* =animasi */
+/* animasi */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1224,5 +1274,4 @@ body {
 .sidebar {
     animation: slideInLeft 0.4s ease;
 }
-
 
