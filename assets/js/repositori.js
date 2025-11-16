@@ -91,16 +91,34 @@ function initializeExistingFolders() {
     });
 }
 
-
-// Fungsi untuk membuat folder baru
 addBtn.addEventListener("click", () => {
-    const name = prompt("Masukkan nama folder:");
-    if (name && name.trim() !== "") {
-        createFolder(name.trim());
-    } else if (name !== null) {
-        alert("Nama folder tidak boleh kosong!");
-    }
+    document.getElementById("addFolderModal").style.display = "flex";
 });
+
+const modalAddFolder = document.getElementById("addFolderModal");
+const createFolderBtn = document.getElementById("confirmAddFolder"); 
+const cancelFolderBtn = document.getElementById("cancelAddFolder");
+const newFolderName = document.getElementById("folderInput"); 
+
+
+cancelFolderBtn.addEventListener("click", () => {
+    modalAddFolder.style.display = "none";
+    newFolderName.value = "";
+});
+
+createFolderBtn.addEventListener("click", () => {
+    const name = newFolderName.value.trim();
+
+    if (name === "") {
+        alert("Nama folder tidak boleh kosong!");
+        return;
+    }
+
+    createFolder(name);
+    modalAddFolder.style.display = "none";
+    newFolderName.value = "";
+});
+
 
 
 // Fungsi untuk membuat folder
@@ -158,18 +176,41 @@ function deleteFolder(wrapper, name) {
     }
 }
 
+let currentOpenedFolder = null;
 
-// Fungsi untuk membuka folder
 function openFolder(name) {
-    // Tambahkan fungsi yang diinginkan ketika folder diklik
-    console.log(`Membuka folder: "${name}"`);
-   
-    // Contoh: Bisa redirect ke halaman folder, buka modal, dll.
-    // window.location.href = `folder.html?name=${encodeURIComponent(name)}`;
-   
-    // Untuk sementara, tampilkan alert
-    alert(`Membuka folder: ${name}\n\nFitur ini bisa dikembangkan lebih lanjut untuk:\n- Menampilkan file dalam folder\n- Upload file\n- Management konten, dll.`);
+    currentOpenedFolder = name;
+    document.getElementById("uploadModal").style.display = "flex";
 }
+
+const uploadModal = document.getElementById("uploadModal");
+const fileInput = document.getElementById("fileInput");
+const cancelUpload = document.getElementById("cancelUpload");
+const confirmUpload = document.getElementById("confirmUpload");
+
+cancelUpload.addEventListener("click", () => {
+    uploadModal.style.display = "none";
+    fileInput.value = "";
+});
+
+confirmUpload.addEventListener("click", () => {
+    if (!currentOpenedFolder) return;
+
+    const files = Array.from(fileInput.files);
+    if (files.length === 0) {
+        alert("Pilih minimal 1 file!");
+        return;
+    }
+
+    saveFilesToFolder(currentOpenedFolder, files);
+
+    uploadModal.style.display = "none";
+    fileInput.value = "";
+
+    alert("File berhasil diunggah ke folder: " + currentOpenedFolder);
+    showFilesInFolder(currentOpenedFolder);
+});
+
 
 
 // Fungsi untuk menyimpan data ke localStorage
@@ -241,21 +282,33 @@ function createFolderFromData(name, colorClass) {
     });
 }
 
+//tambahan 
+function saveFilesToFolder(folderName, files) {
+    let repoData = JSON.parse(localStorage.getItem("repoFiles")) || {};
 
-// Inisialisasi saat halaman dimuat
+    if (!repoData[folderName]) {
+        repoData[folderName] = [];
+    }
+
+    files.forEach(file => {
+        repoData[folderName].push({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadedAt: new Date().toLocaleString()
+        });
+    });
+
+    localStorage.setItem("repoFiles", JSON.stringify(repoData));
+}
+
+
+// saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     initializeExistingFolders();
     loadFromLocalStorage();
 });
 
-
-// Event listener untuk tombol add card
-addBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-});
-
-
-// Tambahkan animasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.card-wrapper').forEach((wrapper, index) => {
         wrapper.style.opacity = '0';
@@ -268,4 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 100);
     });
 });
+
+//tambahan 
+window.addEventListener("click", (e) => {
+    if (e.target === uploadModal) {
+        uploadModal.style.display = "none";
+    }
+});
+
 
