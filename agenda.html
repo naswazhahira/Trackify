@@ -145,6 +145,14 @@
                     </div>
                 </div>
 
+                <!-- Search Section -->
+                <div class="search-section">
+                    <div class="search-box">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="taskSearch" placeholder="Cari tugas...">
+                    </div>
+                </div>
+
                 <!-- Add Task Form -->
                 <form id="addForm" class="add-form">
                     <div class="form-row">
@@ -158,12 +166,12 @@
                             <option value="high">🔴 Tinggi</option>
                         </select>
                         <select id="category">
-                            <option value="kuliah">Kuliah</option>
-                            <option value="praktikum">Praktikum</option>
+                            <option value="kuliah">🎓 Kuliah</option>
+                            <option value="praktikum">🧪 Praktikum</option>
                             <option value="uts">📝 UTS</option>
                             <option value="uas">📝 UAS</option>
                             <option value="organisasi">👥 Organisasi</option>
-                            <option value="lainnya">Lainnya</option>
+                            <option value="lainnya">📌 Lainnya</option>
                         </select>
                         <button type="submit" class="primary-btn">
                             <i class='bx bx-plus'></i>
@@ -278,6 +286,66 @@
             <div id="tasksPopupList" class="tasks-list">
                 <!-- Daftar tugas akan diisi oleh JavaScript -->
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal-overlay" id="editModalOverlay"></div>
+    <div id="editModal" class="edit-modal">
+        <div class="modal-header">
+            <h2>Edit Tugas</h2>
+            <button class="modal-close" id="editModalClose">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <div class="modal-content">
+            <form id="editForm" class="edit-form">
+                <input type="hidden" id="editTaskId">
+                
+                <div class="form-group">
+                    <label for="editTaskText">Nama Tugas *</label>
+                    <input type="text" id="editTaskText" placeholder="Masukkan nama tugas" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDueDate">Tanggal Jatuh Tempo *</label>
+                        <input type="date" id="editDueDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editPriority">Prioritas</label>
+                        <select id="editPriority">
+                            <option value="low">🟢 Rendah</option>
+                            <option value="normal">🟡 Normal</option>
+                            <option value="high">🔴 Tinggi</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCategory">Kategori</label>
+                    <select id="editCategory">
+                        <option value="kuliah">🎓 Kuliah</option>
+                        <option value="praktikum">🧪 Praktikum</option>
+                        <option value="uts">📝 UTS</option>
+                        <option value="uas">📝 UAS</option>
+                        <option value="organisasi">👥 Organisasi</option>
+                        <option value="lainnya">📌 Lainnya</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="editCancel" class="secondary-btn">
+                        <i class='bx bx-x'></i>
+                        Batal
+                    </button>
+                    <button type="submit" class="primary-btn">
+                        <i class='bx bx-save'></i>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
