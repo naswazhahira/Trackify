@@ -530,6 +530,38 @@ nav {
     background: var(--bg-color);
 }
 
+/* Search Section */
+.search-section {
+    margin: 15px 0;
+}
+
+.search-box {
+    position: relative;
+    max-width: 300px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.search-box i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
 /* Button Styles */
 .primary-btn {
     background: linear-gradient(135deg, var(--primary-color), #667eea);
@@ -608,6 +640,7 @@ nav {
     gap: 15px;
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
+    cursor: pointer;
 }
 
 .todo-item:hover {
@@ -702,6 +735,61 @@ nav {
 .delete-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.edit-btn {
+    background: var(--warning-color);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
+}
+
+/* Edit Input Styles */
+.edit-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg-color);
+    margin-bottom: 8px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.edit-actions button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.edit-save {
+    background: var(--success-color);
+    color: white;
+}
+
+.edit-cancel {
+    background: var(--danger-color);
+    color: white;
 }
 
 /* Reward Popup */
@@ -1090,6 +1178,23 @@ nav {
     to { transform: translateX(100%); opacity: 0; }
 }
 
+/* Data Backup Section */
+.backup-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(158, 198, 243, 0.1);
+    border-radius: 15px;
+    text-align: center;
+}
+
+.backup-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .schedule-wrapper {
@@ -1146,6 +1251,11 @@ nav {
         left: 10px;
         max-width: none;
     }
+    
+    .backup-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1177,5 +1287,9 @@ nav {
     
     .modal-header {
         padding: 15px 20px;
+    }
+    
+    .todo-actions {
+        flex-direction: column;
     }
 }
