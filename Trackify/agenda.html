@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackify - Jadwal & To-Do List</title>
+  <link rel="stylesheet" href="assets/css/agenda.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Memuat Trackify...</div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="wrapper">
+            <div class="wrapper-nav">
+                <a href="#" class="hamburger-icon"><i class='bx bx-menu'></i></a>
+                <span class="nav-title">Agenda</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <h3>Trackify</h3>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <a href="beranda.html" class="menu-item">
+                <i class='bx bx-home'></i>
+                <span>Beranda</span>
+            </a>
+            <a href="timer.html" class="menu-item">
+                <i class='bx bx-time-five'></i>
+                <span>Timer Kegiatan</span>
+            </a>
+            <a href="agenda.html" class="menu-item active">
+                <i class='bx bx-calendar'></i>
+                <span>Agenda</span>
+            </a>
+            <a href="repositori.html" class="menu-item">
+                <i class='bx bx-folder'></i>
+                <span>Repositori</span>
+            </a>
+            <a href="profile.html" class="menu-item">
+                <i class='bx bx-user'></i>
+                <span>Profil</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Reminder Notification -->
+        <div class="reminder-notification" id="reminderNotification">
+            <div class="reminder-icon">⏰</div>
+            <div class="reminder-content">
+                <div class="reminder-title" id="reminderTitle">Pengingat Tugas</div>
+                <div class="reminder-message" id="reminderMessage">Ada tugas yang deadline-nya dekat!</div>
+            </div>
+            <button class="reminder-close" id="reminderClose">
+                <i class='bx bx-x'></i>
+            </button>
+            <div class="reminder-badge" id="reminderBadge">0</div>
+        </div>
+
+        <div class="schedule-wrapper">
+            <!-- Kalender Section -->
+            <div class="card calendar-card">
+                <div class="card-header">
+                    <h2>Kalender</h2>
+                    <div class="calendar-nav">
+                        <button id="prev" class="nav-btn">
+                            <i class='bx bx-chevron-left'></i>
+                        </button>
+                        <h3 id="monthYear">Bulan Tahun</h3>
+                        <button id="next" class="nav-btn">
+                            <i class='bx bx-chevron-right'></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="weekdays">
+                    <div class="weekday">Min</div>
+                    <div class="weekday">Sen</div>
+                    <div class="weekday">Sel</div>
+                    <div class="weekday">Rab</div>
+                    <div class="weekday">Kam</div>
+                    <div class="weekday">Jum</div>
+                    <div class="weekday">Sab</div>
+                </div>
+
+                <div id="calendarGrid" class="calendar-grid">
+                    <!-- Kalender akan diisi oleh JavaScript -->
+                </div>
+
+                <div class="quick-add-section">
+                    <h4>Tambah Agenda Cepat</h4>
+                    <div class="quick-add-form">
+                        <input id="eventName" type="text" placeholder="Nama Agenda (misal: Tugas PemWeb)">
+                        <input id="eventDate" type="date">
+                        <button id="addEventBtn" class="primary-btn">
+                            <i class='bx bx-plus'></i>
+                            Tambah sebagai tugas
+                        </button>
+                    </div>
+                    <p class="helper-text">Klik tanggal di kalender untuk melihat/mengedit tugas</p>
+                </div>
+            </div>
+
+            <!-- To-Do List Section -->
+            <div class="card todo-card">
+                <div class="card-header">
+                    <div class="todo-header">
+                        <div>
+                            <h2>Daftar Agenda</h2>
+                            <p id="dateLabel" class="date-label">—</p>
+                        </div>
+                        <button id="viewAllTasksBtn" class="secondary-btn">
+                            <i class='bx bx-list-ul'></i>
+                            Lihat Semua Tugas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Section -->
+                <div class="progress-section">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="progressText" class="progress-text">0/0 tugas selesai</span>
+                        <span id="percentText" class="progress-percent">0%</span>
+                    </div>
+                </div>
+
+                <!-- Add Task Form -->
+                <form id="addForm" class="add-form">
+                    <div class="form-row">
+                        <input id="taskInput" type="text" placeholder="Tulis tugas (misal: Kerjakan PR Matematika)" required>
+                        <input id="dueDate" type="date" required>
+                    </div>
+                    <div class="form-row">
+                        <select id="priority">
+                            <option value="low">🟢 Rendah</option>
+                            <option value="normal" selected>🟡 Normal</option>
+                            <option value="high">🔴 Tinggi</option>
+                        </select>
+                        <select id="category">
+                            <option value="kuliah">Kuliah</option>
+                            <option value="praktikum">Praktikum</option>
+                            <option value="uts">📝 UTS</option>
+                            <option value="uas">📝 UAS</option>
+                            <option value="organisasi">👥 Organisasi</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                        <button type="submit" class="primary-btn">
+                            <i class='bx bx-plus'></i>
+                            Tambah
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Filter:</label>
+                        <input id="filterDate" type="date" placeholder="Tanggal">
+                        <select id="filterPriority">
+                            <option value="">Semua Prioritas</option>
+                            <option value="low">Rendah</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">Tinggi</option>
+                        </select>
+                        <button id="clearFilters" class="outline-btn">
+                            <i class='bx bx-reset'></i>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Todo List -->
+                <div id="todoList" class="todo-list">
+                    <!-- Daftar tugas akan diisi oleh JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reward Popup -->
+    <div id="rewardPopup" class="reward-popup">
+        <div class="reward-content">
+            <div class="reward-icon">🎉</div>
+            <h3>Yeay! Tugas selesai!</h3>
+            <p>Kamu hebat hari ini — istirahat sebentar atau beri reward kecil untuk dirimu :)</p>
+            <button id="closeReward" class="primary-btn">Tutup</button>
+        </div>
+    </div>
+
+    <!-- All Tasks Popup -->
+    <div class="modal-overlay" id="tasksPopupOverlay"></div>
+    <div id="tasksPopup" class="tasks-popup">
+        <div class="modal-header">
+            <h2>Daftar Semua Tugas</h2>
+            <button class="modal-close" id="tasksPopupClose">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <div class="modal-content">
+            <div class="tasks-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tugas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Tugas Selesai</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="pendingTasks">0</div>
+                    <div class="stat-label">Tugas Tertunda</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="overdueTasks">0</div>
+                    <div class="stat-label">Tugas Terlambat</div>
+                </div>
+            </div>
+
+            <div class="tasks-filters">
+                <select id="tasksFilterMonth">
+                    <option value="">Semua Bulan</option>
+                    <option value="0">Januari</option>
+                    <option value="1">Februari</option>
+                    <option value="2">Maret</option>
+                    <option value="3">April</option>
+                    <option value="4">Mei</option>
+                    <option value="5">Juni</option>
+                    <option value="6">Juli</option>
+                    <option value="7">Agustus</option>
+                    <option value="8">September</option>
+                    <option value="9">Oktober</option>
+                    <option value="10">November</option>
+                    <option value="11">Desember</option>
+                </select>
+                <select id="tasksFilterStatus">
+                    <option value="">Semua Status</option>
+                    <option value="completed">Selesai</option>
+                    <option value="pending">Belum Selesai</option>
+                </select>
+                <select id="tasksFilterPriority">
+                    <option value="">Semua Prioritas</option>
+                    <option value="high">Tinggi</option>
+                    <option value="normal">Normal</option>
+                    <option value="low">Rendah</option>
+                </select>
+                <select id="tasksFilterCategory">
+                    <option value="">Semua Kategori</option>
+                    <option value="kuliah">Kuliah</option>
+                    <option value="praktikum">Praktikum</option>
+                    <option value="uts">UTS</option>
+                    <option value="uas">UAS</option>
+                    <option value="organisasi">Organisasi</option>
+                    <option value="lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div id="tasksPopupList" class="tasks-list">
+                <!-- Daftar tugas akan diisi oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/agenda.js"></script>
+</body>
+</html>
