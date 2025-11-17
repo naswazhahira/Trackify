@@ -1,7 +1,7 @@
-// jadwal.js - Jadwal & To-Do List (Versi Lengkap dengan Perbaikan)
+// jadwal.js - Jadwal & To-Do List (Versi Lengkap dengan Fitur Edit)
 document.addEventListener('DOMContentLoaded', function() {
     // State & Konfigurasi
-    const STORAGE_KEY = 'trackify_todos_v7'; // Update version
+    const STORAGE_KEY = 'trackify_todos_v8'; // Update version untuk fitur edit
     let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     
     // DOM Elements
@@ -45,6 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const overdueTasks = document.getElementById('overdueTasks');
     const tasksPopupOverlay = document.getElementById('tasksPopupOverlay');
     const loadingElement = document.getElementById('loading');
+    const taskSearch = document.getElementById('taskSearch');
+    
+    // Edit Modal Elements
+    const editModal = document.getElementById('editModal');
+    const editModalOverlay = document.getElementById('editModalOverlay');
+    const editModalClose = document.getElementById('editModalClose');
+    const editForm = document.getElementById('editForm');
+    const editTaskId = document.getElementById('editTaskId');
+    const editTaskText = document.getElementById('editTaskText');
+    const editDueDate = document.getElementById('editDueDate');
+    const editPriority = document.getElementById('editPriority');
+    const editCategory = document.getElementById('editCategory');
+    const editCancel = document.getElementById('editCancel');
     
     // Reminder Elements
     const reminderNotification = document.getElementById('reminderNotification');
@@ -210,7 +223,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set default dates
         dueDateInput.value = selectedDate;
         eventDate.value = toISO(today);
-        eventDate.min = toISO(today); // Set minimum date to today
+        dueDateInput.min = new Date().toISOString().split('T')[0];
+        eventDate.min = new Date().toISOString().split('T')[0];
 
         // Initial render with slight delay for better UX
         setTimeout(() => {
@@ -228,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadingElement.style.display = 'none';
             }
 
-            console.log('✅ Trackify App Loaded Successfully');
+            console.log('✅ Trackify App Loaded Successfully - Edit Feature Ready');
         }, 800);
     }
 
@@ -259,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filterPriority.addEventListener('change', applyFilters);
         clearFilters.addEventListener('click', resetFilters);
 
+        // Search
+        taskSearch.addEventListener('input', applyFilters);
+
         // Popups
         closeReward.addEventListener('click', hideReward);
         viewAllTasksBtn.addEventListener('click', showTasksPopup);
@@ -271,6 +288,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tasksFilterPriority.addEventListener('change', renderTasksPopup);
         tasksFilterCategory.addEventListener('change', renderTasksPopup);
 
+        // Edit Modal Events
+        editModalClose.addEventListener('click', hideEditModal);
+        editCancel.addEventListener('click', hideEditModal);
+        editForm.addEventListener('submit', saveEditedTodo);
+        editModalOverlay.addEventListener('click', hideEditModal);
+
         // Reminder
         reminderClose.addEventListener('click', () => {
             notificationManager.hideReminder();
@@ -282,6 +305,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tasksPopup.classList.contains('active')) {
                     hideTasksPopup();
                 }
+                if (editModal.classList.contains('active')) {
+                    hideEditModal();
+                }
                 if (sidebarMenu.classList.contains('active')) {
                     toggleSidebar();
                 }
@@ -289,6 +315,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     hideReward();
                 }
                 notificationManager.hideReminder();
+            }
+            
+            // Ctrl+E untuk edit task pertama
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                const firstTodo = document.querySelector('.todo-item:not(.completed)');
+                if (firstTodo) {
+                    const id = firstTodo.querySelector('.todo-checkbox').dataset.id;
+                    showEditModal(id);
+                }
             }
         });
 
@@ -428,11 +464,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Todo Functions
     function renderTodos() {
+        let filtered = getFilteredTodos();
+        renderFilteredTodos(filtered);
+    }
+
+    function getFilteredTodos() {
         let filtered = todos.filter(t => t.date === selectedDate);
         
-        // Apply additional filters if any
         const dateFilter = filterDate.value;
         const priorityFilter = filterPriority.value;
+        const searchTerm = taskSearch.value.toLowerCase();
         
         if (dateFilter) {
             filtered = filtered.filter(t => t.date === dateFilter);
@@ -440,7 +481,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (priorityFilter) {
             filtered = filtered.filter(t => t.priority === priorityFilter);
         }
+        if (searchTerm) {
+            filtered = filtered.filter(t => 
+                t.text.toLowerCase().includes(searchTerm) ||
+                t.category.toLowerCase().includes(searchTerm)
+            );
+        }
         
+        return filtered;
+    }
+
+    function renderFilteredTodos(filtered) {
         todoListEl.innerHTML = '';
 
         if (filtered.length === 0) {
@@ -449,12 +500,25 @@ document.addEventListener('DOMContentLoaded', function() {
             empty.style.justifyContent = 'center';
             empty.style.background = 'transparent';
             empty.style.boxShadow = 'none';
-            empty.innerHTML = `
-                <div style="text-align: center; color: #666; padding: 20px;">
-                    <i class='bx bx-calendar-x' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    <div>Tidak ada tugas untuk tanggal ini.</div>
-                </div>
-            `;
+            
+            const searchTerm = taskSearch.value;
+            if (searchTerm) {
+                empty.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <i class='bx bx-search' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        <div>Tidak ada tugas yang sesuai dengan "${searchTerm}".</div>
+                        <p class="helper-text">Coba kata kunci lain atau hapus pencarian</p>
+                    </div>
+                `;
+            } else {
+                empty.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <i class='bx bx-calendar-x' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        <div>Tidak ada tugas untuk tanggal ini.</div>
+                        <p class="helper-text">Tambahkan tugas baru menggunakan form di atas</p>
+                    </div>
+                `;
+            }
             todoListEl.appendChild(empty);
         } else {
             filtered.forEach(todo => {
@@ -475,6 +539,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const overdue = new Date(todo.date) < new Date() && !todo.completed;
         if (overdue) el.classList.add('overdue');
 
+        const updatedIndicator = todo.updatedAt ? '<span class="todo-chip">✏️ Diupdate</span>' : '';
+
         el.innerHTML = `
             <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-id="${todo.id}"></div>
             <div class="todo-content">
@@ -483,9 +549,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="todo-chip">${categoryEmoji[todo.category] || ''} ${capitalizeLabel(todo.category)}</span>
                     <span class="todo-chip">📅 ${formatDateDisplay(todo.date)}</span>
                     ${todo.priority !== 'normal' ? `<span class="todo-chip">${getPriorityIcon(todo.priority)} ${capitalizeLabel(todo.priority)}</span>` : ''}
+                    ${updatedIndicator}
                 </div>
             </div>
             <div class="todo-actions">
+                <button class="edit-btn" data-id="${todo.id}" title="Edit tugas">
+                    <i class='bx bx-edit'></i>
+                </button>
                 <button class="delete-btn" data-id="${todo.id}" title="Hapus tugas">
                     <i class='bx bx-trash'></i>
                 </button>
@@ -534,6 +604,168 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        
+        // Edit events - Modal version
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                showEditModal(id);
+            });
+        });
+        
+        // Double click to edit (inline)
+        document.querySelectorAll('.todo-item').forEach(item => {
+            item.addEventListener('dblclick', (e) => {
+                if (!e.target.closest('.todo-checkbox') && !e.target.closest('.todo-actions')) {
+                    const id = item.querySelector('.todo-checkbox').dataset.id;
+                    const todo = todos.find(t => t.id === id);
+                    if (todo && !todo.completed) {
+                        enableInlineEdit(id);
+                    }
+                }
+            });
+        });
+    }
+
+    // Edit Modal Functions
+    function showEditModal(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        if (!todo) {
+            notificationManager.showMessage('Tugas tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // Fill form with current data
+        editTaskId.value = todo.id;
+        editTaskText.value = todo.text;
+        editDueDate.value = todo.date;
+        editPriority.value = todo.priority;
+        editCategory.value = todo.category;
+        
+        // Set min date untuk edit
+        editDueDate.min = new Date().toISOString().split('T')[0];
+        
+        editModal.classList.add('active');
+        editModalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus dan select text
+        setTimeout(() => {
+            editTaskText.focus();
+            editTaskText.select();
+        }, 100);
+    }
+
+    function hideEditModal() {
+        editModal.classList.remove('active');
+        editModalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        editForm.reset();
+    }
+
+    function saveEditedTodo(e) {
+        e.preventDefault();
+        
+        const todoId = editTaskId.value;
+        const todo = todos.find(t => t.id === todoId);
+        
+        if (!todo) {
+            notificationManager.showMessage('Tugas tidak ditemukan!', 'error');
+            return;
+        }
+        
+        if (!editTaskText.value.trim()) {
+            notificationManager.showMessage('Nama tugas tidak boleh kosong!', 'error');
+            editTaskText.focus();
+            return;
+        }
+        
+        // Validasi tanggal
+        const selectedDate = new Date(editDueDate.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            notificationManager.showMessage('Tidak bisa memilih tanggal masa lalu!', 'error');
+            editDueDate.focus();
+            return;
+        }
+        
+        // Update todo data
+        todo.text = editTaskText.value.trim();
+        todo.date = editDueDate.value;
+        todo.priority = editPriority.value;
+        todo.category = editCategory.value;
+        todo.updatedAt = Date.now();
+        
+        saveTodos();
+        renderCalendar();
+        renderTodos();
+        hideEditModal();
+        
+        notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
+    }
+
+    // Inline Edit Functions
+    function enableInlineEdit(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        const todoElement = document.querySelector(`[data-id="${todoId}"]`).closest('.todo-item');
+        
+        if (!todo || !todoElement) return;
+        
+        // Set editing mode
+        todoElement.classList.add('editing');
+        
+        const currentContent = todoElement.querySelector('.todo-content');
+        currentContent.innerHTML = `
+            <input type="text" class="edit-input" value="${escapeHtml(todo.text)}" placeholder="Nama tugas...">
+            <div class="edit-actions">
+                <button class="edit-save" onclick="saveInlineEdit('${todoId}')">
+                    <i class='bx bx-check'></i> Simpan
+                </button>
+                <button class="edit-cancel" onclick="cancelInlineEdit('${todoId}')">
+                    <i class='bx bx-x'></i> Batal
+                </button>
+            </div>
+        `;
+        
+        const input = currentContent.querySelector('.edit-input');
+        input.focus();
+        input.select();
+        
+        // Enter to save, Escape to cancel
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveInlineEdit(todoId);
+            } else if (e.key === 'Escape') {
+                cancelInlineEdit(todoId);
+            }
+        });
+    }
+
+    function saveInlineEdit(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        const todoElement = document.querySelector(`[data-id="${todoId}"]`).closest('.todo-item');
+        const input = todoElement.querySelector('.edit-input');
+        
+        if (!input.value.trim()) {
+            notificationManager.showMessage('Nama tugas tidak boleh kosong!', 'error');
+            input.focus();
+            return;
+        }
+        
+        todo.text = input.value.trim();
+        todo.updatedAt = Date.now();
+        
+        saveTodos();
+        renderTodos();
+        
+        notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
+    }
+
+    function cancelInlineEdit(todoId) {
+        renderTodos();
     }
 
     function addTodo(e) {
@@ -547,6 +779,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!dueDateInput.value) {
             notificationManager.showMessage('Pilih tanggal jatuh tempo!', 'error', 2000);
+            dueDateInput.focus();
+            return;
+        }
+
+        // Validasi tanggal tidak boleh masa lalu
+        const selectedDate = new Date(dueDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            notificationManager.showMessage('Tidak bisa memilih tanggal masa lalu!', 'error', 3000);
             dueDateInput.focus();
             return;
         }
@@ -611,6 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetFilters() {
         filterDate.value = '';
         filterPriority.value = '';
+        taskSearch.value = '';
         renderTodos();
         notificationManager.showMessage('Filter direset', 'info', 2000);
     }
@@ -667,11 +911,11 @@ document.addEventListener('DOMContentLoaded', function() {
         overdueTasks.textContent = overdue;
 
         // Apply filters
-        const filteredTasks = getFilteredTasks();
+        const filteredTasks = getFilteredTasksPopup();
         renderFilteredTasksPopup(filteredTasks);
     }
 
-    function getFilteredTasks() {
+    function getFilteredTasksPopup() {
         const monthFilter = tasksFilterMonth.value;
         const statusFilter = tasksFilterStatus.value;
         const priorityFilter = tasksFilterPriority.value;
@@ -756,6 +1000,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createTaskPopupElement(task) {
         const isOverdue = !task.completed && new Date(task.date) < new Date();
+        const updatedIndicator = task.updatedAt ? '<span class="task-popup-chip">✏️ Diupdate</span>' : '';
+        
         const el = document.createElement('div');
         el.className = `task-popup-item ${task.completed ? 'completed' : ''}`;
 
@@ -768,9 +1014,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="task-popup-chip">${getPriorityIcon(task.priority)} ${capitalizeLabel(task.priority)}</span>
                     ${isOverdue ? '<span class="task-popup-chip" style="background:#ffcccc;">⏰ Terlambat</span>' : ''}
                     <span class="task-popup-chip">📅 ${formatDateDisplay(task.date)}</span>
+                    ${updatedIndicator}
                 </div>
             </div>
             <div class="todo-actions">
+                <button class="edit-btn" data-id="${task.id}" title="Edit tugas">
+                    <i class='bx bx-edit'></i>
+                </button>
                 <button class="delete-btn" data-id="${task.id}" title="Hapus tugas">
                     <i class='bx bx-trash'></i>
                 </button>
@@ -810,9 +1060,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        
+        // Edit in tasks popup
+        document.querySelectorAll('.task-popup-item .edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                showEditModal(id);
+            });
+        });
     }
 
-    // Reminder Functions - PERBAIKAN: Hanya H-1
+    // Reminder Functions
     function checkUpcomingDeadlines() {
         const now = new Date();
         const tomorrow = new Date(now);
@@ -888,6 +1147,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return dateStr;
         }
     }
+
+    // Make functions globally available for inline edit
+    window.saveInlineEdit = saveInlineEdit;
+    window.cancelInlineEdit = cancelInlineEdit;
 
     // Initialize the application
     initializeApp();

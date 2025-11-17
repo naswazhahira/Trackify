@@ -466,6 +466,38 @@ nav {
     color: var(--primary-color);
 }
 
+/* Search Section */
+.search-section {
+    margin: 15px 0;
+}
+
+.search-box {
+    position: relative;
+    max-width: 300px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.search-box i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
 /* Form Styles */
 .add-form {
     margin: 20px 0;
@@ -608,6 +640,7 @@ nav {
     gap: 15px;
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
+    cursor: pointer;
 }
 
 .todo-item:hover {
@@ -622,6 +655,11 @@ nav {
 
 .todo-item.overdue {
     border-left-color: var(--danger-color);
+}
+
+.todo-item.editing {
+    background: rgba(158, 198, 243, 0.1);
+    border: 2px solid var(--primary-color);
 }
 
 .todo-checkbox {
@@ -704,6 +742,137 @@ nav {
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
 }
 
+.edit-btn {
+    background: var(--warning-color);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
+}
+
+/* Edit Input Styles */
+.edit-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg-color);
+    margin-bottom: 8px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.edit-actions button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-save {
+    background: var(--success-color);
+    color: white;
+}
+
+.edit-cancel {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Edit Modal Styles */
+.edit-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    background: var(--bg-color);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 10002;
+    display: none;
+    flex-direction: column;
+}
+
+.edit-modal.active {
+    display: flex;
+    animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.edit-form {
+    padding: 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
 /* Reward Popup */
 .reward-popup {
     position: fixed;
@@ -783,17 +952,6 @@ nav {
 .tasks-popup.active {
     display: flex;
     animation: modalAppear 0.3s ease;
-}
-
-@keyframes modalAppear {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -40%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
 }
 
 .modal-header {
@@ -1146,6 +1304,14 @@ nav {
         left: 10px;
         max-width: none;
     }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .edit-actions {
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1177,5 +1343,9 @@ nav {
     
     .modal-header {
         padding: 15px 20px;
+    }
+    
+    .todo-actions {
+        flex-direction: column;
     }
 }
