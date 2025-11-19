@@ -414,38 +414,89 @@ document.addEventListener('DOMContentLoaded', function() {
                 badge.innerHTML = `<span>📚</span> <span>${dayTodos.length}</span>`;
                 dayEl.appendChild(badge);
             }
-            
-            // Add icon
             const addIcon = document.createElement('div');
             addIcon.className = 'add-icon';
             addIcon.innerHTML = '+';
-            addIcon.title = 'Pilih tanggal ini';
-            addIcon.addEventListener('click', (ev) => {
+            addIcon.title = 'Tambah tugas untuk tanggal ini';
+            addIcon.setAttribute('role', 'button');
+            addIcon.setAttribute('tabindex', '0');
+            addIcon.setAttribute('aria-label', `Tambah tugas untuk tanggal ${d}`);
+            
+            // Event listener yang diperbaiki
+            addIcon.addEventListener('click', function(ev) {
+                console.log('Add icon clicked for date:', dateStr);
+                ev.preventDefault();
                 ev.stopPropagation();
-                selectDate(dateStr);
-                taskInput.focus();
+                ev.stopImmediatePropagation();
+                
+                selectDatePreserveFilters(dateStr);
+                
+                // Focus ke task input dengan delay
+                setTimeout(() => {
+                    if (taskInput) {
+                        taskInput.focus();
+                        console.log('✅ Task input focused');
+                    }
+                }, 150);
             });
+            
+            // Support untuk keyboard accessibility
+            addIcon.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    selectDatePreserveFilters(dateStr);
+                    
+                    setTimeout(() => {
+                        if (taskInput) taskInput.focus();
+                    }, 150);
+                }
+            });
+            
             dayEl.appendChild(addIcon);
-
-            // Day click
+            // Day click - untuk memilih tanggal (tanpa reset filter)
             dayEl.addEventListener('click', () => {
-                selectDate(dateStr);
+                selectDatePreserveFilters(dateStr);
             });
 
             calendarGrid.appendChild(dayEl);
         }
     }
 
-    function selectDate(dateStr) {
-        setSelectedDate(dateStr);
-        // Scroll ke todo section dengan behavior smooth
+    function selectDatePreserveFilters(dateStr) {
+        console.log('📅 Selecting date with filters preserved:', dateStr);
+        
+        // Simpan state filter sebelum mengganti date
+        const currentDateFilter = filterDate.value;
+        const currentPriorityFilter = filterPriority.value;
+        const currentSearchTerm = taskSearch.value;
+        
+        // Update selected date
+        selectedDate = dateStr;
+        dateLabel.textContent = `Tugas untuk ${formatDateDisplay(dateStr)}`;
+        dueDateInput.value = dateStr;
+        updateQueryParam(dateStr);
+        
+        // Render todos dengan filter yang sama
+        setTimeout(() => {
+            // Restore filters
+            if (currentDateFilter) filterDate.value = currentDateFilter;
+            if (currentPriorityFilter) filterPriority.value = currentPriorityFilter;
+            if (currentSearchTerm) taskSearch.value = currentSearchTerm;
+            
+            // Re-render dengan filter yang dipulihkan
+            renderTodos();
+        }, 10);
+        
+        // Scroll ke todo section
         const todoCard = document.querySelector('.todo-card');
         if (todoCard) {
             setTimeout(() => {
                 todoCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
-        resetFilters();
+        
+        notificationManager.showMessage(`Tanggal dipilih: ${formatDateDisplay(dateStr)}`, 'info', 1500);
     }
 
     function setSelectedDate(dateStr) {
@@ -918,6 +969,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetFilters() {
+        console.log('🔄 resetFilters called manually');
         filterDate.value = '';
         filterPriority.value = '';
         taskSearch.value = '';
