@@ -1,4 +1,4 @@
-// jadwal.js - Jadwal & To-Do List (Versi Lengkap dengan Fitur Edit)
+// jadwal.js - Jadwal & To-Do List
 document.addEventListener('DOMContentLoaded', function() {
     // State & Konfigurasi
     const STORAGE_KEY = 'trackify_todos_v8'; // Update version untuk fitur edit
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Auto-hide notifications when clicking anywhere
+        // Auto-hide notifications 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.reminder-notification') && !e.target.closest('.notification')) {
                 const notifications = document.querySelectorAll('.notification');
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const badge = document.createElement('div');
                 badge.className = 'event-badge';
                 badge.title = `${dayTodos.length} tugas`;
-                // Tambahkan ikon buku dan jumlah tugas
+                //ikon buku dan jumlah tugas
                 badge.innerHTML = `<span>📚</span> <span>${dayTodos.length}</span>`;
                 dayEl.appendChild(badge);
             }
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Edit events - Modal version
+        // Edit events
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -614,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Double click to edit (inline)
+        // Double click to edit 
         document.querySelectorAll('.todo-item').forEach(item => {
             item.addEventListener('dblclick', (e) => {
                 if (!e.target.closest('.todo-checkbox') && !e.target.closest('.todo-actions')) {
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Fill form with current data
+        // Isi formulir dengan data saat ini
         editTaskId.value = todo.id;
         editTaskText.value = todo.text;
         editDueDate.value = todo.date;
@@ -707,32 +707,62 @@ document.addEventListener('DOMContentLoaded', function() {
         notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
     }
 
-    // Inline Edit Functions
+    /* Mengaktifkan mode edit inline untuk tugas */
     function enableInlineEdit(todoId) {
         const todo = todos.find(t => t.id === todoId);
-        const todoElement = document.querySelector(`[data-id="${todoId}"]`).closest('.todo-item');
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
         
-        if (!todo || !todoElement) return;
+        if (!todo || !todoElement) {
+            console.error('Todo tidak ditemukan untuk edit inline:', todoId);
+            return;
+        }
         
         // Set editing mode
         todoElement.classList.add('editing');
         
         const currentContent = todoElement.querySelector('.todo-content');
+        if (!currentContent) {
+            console.error('Elemen todo-content tidak ditemukan');
+            return;
+        }
+        
+        // Simpan konten asli untuk fallback
+        const originalContent = currentContent.innerHTML;
+        
         currentContent.innerHTML = `
             <input type="text" class="edit-input" value="${escapeHtml(todo.text)}" placeholder="Nama tugas...">
             <div class="edit-actions">
-                <button class="edit-save" onclick="saveInlineEdit('${todoId}')">
+                <button type="button" class="edit-save" data-id="${todoId}">
                     <i class='bx bx-check'></i> Simpan
                 </button>
-                <button class="edit-cancel" onclick="cancelInlineEdit('${todoId}')">
+                <button type="button" class="edit-cancel" data-id="${todoId}">
                     <i class='bx bx-x'></i> Batal
                 </button>
             </div>
         `;
         
         const input = currentContent.querySelector('.edit-input');
+        if (!input) {
+            console.error('Input edit tidak ditemukan');
+            currentContent.innerHTML = originalContent;
+            return;
+        }
+        
+        // Focus dan select semua text
         input.focus();
         input.select();
+        
+        // Event listeners untuk tombol inline
+        const saveBtn = currentContent.querySelector('.edit-save');
+        const cancelBtn = currentContent.querySelector('.edit-cancel');
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => saveInlineEdit(todoId));
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => cancelInlineEdit(todoId));
+        }
         
         // Enter to save, Escape to cancel
         input.addEventListener('keydown', (e) => {
@@ -742,30 +772,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 cancelInlineEdit(todoId);
             }
         });
+        
+        // Click outside to save
+        const outsideClickHandler = (e) => {
+            if (!todoElement.contains(e.target)) {
+                saveInlineEdit(todoId);
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        };
+        
+        // Delay sedikit untuk menghindari trigger langsung
+        setTimeout(() => {
+            document.addEventListener('click', outsideClickHandler);
+        }, 100);
     }
 
     function saveInlineEdit(todoId) {
         const todo = todos.find(t => t.id === todoId);
-        const todoElement = document.querySelector(`[data-id="${todoId}"]`).closest('.todo-item');
-        const input = todoElement.querySelector('.edit-input');
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
         
-        if (!input.value.trim()) {
+        if (!todo || !todoElement) {
+            console.error('Todo tidak ditemukan untuk disimpan:', todoId);
+            return;
+        }
+        
+        const input = todoElement.querySelector('.edit-input');
+        if (!input) {
+            console.error('Input edit tidak ditemukan untuk disimpan');
+            return;
+        }
+        
+        const newText = input.value.trim();
+        
+        if (!newText) {
             notificationManager.showMessage('Nama tugas tidak boleh kosong!', 'error');
             input.focus();
             return;
         }
         
-        todo.text = input.value.trim();
+        if (newText === todo.text) {
+            // Tidak ada perubahan, cukup batalkan
+            cancelInlineEdit(todoId);
+            return;
+        }
+        
+        // Update todo data
+        todo.text = newText;
         todo.updatedAt = Date.now();
         
         saveTodos();
-        renderTodos();
+        renderTodos(); // Render ulang untuk menampilkan perubahan
         
         notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
     }
 
     function cancelInlineEdit(todoId) {
-        renderTodos();
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`)?.closest('.todo-item');
+        if (todoElement) {
+            todoElement.classList.remove('editing');
+        }
+        renderTodos(); // Render ulang untuk kembali ke tampilan normal
     }
 
     function addTodo(e) {
@@ -1151,6 +1217,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make functions globally available for inline edit
     window.saveInlineEdit = saveInlineEdit;
     window.cancelInlineEdit = cancelInlineEdit;
+    window.enableInlineEdit = enableInlineEdit;
 
     // Initialize the application
     initializeApp();
