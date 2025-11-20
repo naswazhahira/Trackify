@@ -21,8 +21,13 @@
     <nav>
         <div class="wrapper">
             <div class="wrapper-nav">
-                <a href="#" class="hamburger-icon"><i class='bx bx-menu'></i></a>
+                <a href="#" class="hamburger-icon" aria-label="Buka menu">
+                    <i class='bx bx-menu'></i>
+                </a>
                 <span class="nav-title">Agenda</span>
+                <div class="nav-hint">
+                    <span class="hint-text">💡 Double-click tugas untuk edit cepat</span>
+                </div>
             </div>
         </div>
     </nav>
@@ -32,7 +37,7 @@
     <div class="sidebar-menu" id="sidebarMenu">
         <div class="sidebar-header">
             <h3>Trackify</h3>
-            <button class="sidebar-close" id="sidebarClose">
+            <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
                 <i class='bx bx-x'></i>
             </button>
         </div>
@@ -60,7 +65,7 @@
         </div>
     </div>
 
-    <!-- Main Container -->
+    <!-- Main -->
     <div class="container">
         <!-- Reminder Notification -->
         <div class="reminder-notification" id="reminderNotification">
@@ -69,23 +74,23 @@
                 <div class="reminder-title" id="reminderTitle">Pengingat Tugas</div>
                 <div class="reminder-message" id="reminderMessage">Ada tugas yang deadline-nya dekat!</div>
             </div>
-            <button class="reminder-close" id="reminderClose">
+            <button class="reminder-close" id="reminderClose" aria-label="Tutup pengingat">
                 <i class='bx bx-x'></i>
             </button>
             <div class="reminder-badge" id="reminderBadge">0</div>
         </div>
 
         <div class="schedule-wrapper">
-            <!-- Kalender Section -->
+            <!-- Kalender -->
             <div class="card calendar-card">
                 <div class="card-header">
                     <h2>Kalender</h2>
                     <div class="calendar-nav">
-                        <button id="prev" class="nav-btn">
+                        <button id="prev" class="nav-btn" aria-label="Bulan sebelumnya">
                             <i class='bx bx-chevron-left'></i>
                         </button>
                         <h3 id="monthYear">Bulan Tahun</h3>
-                        <button id="next" class="nav-btn">
+                        <button id="next" class="nav-btn" aria-label="Bulan berikutnya">
                             <i class='bx bx-chevron-right'></i>
                         </button>
                     </div>
@@ -108,9 +113,10 @@
                 <div class="quick-add-section">
                     <h4>Tambah Agenda Cepat</h4>
                     <div class="quick-add-form">
-                        <input id="eventName" type="text" placeholder="Nama Agenda (misal: Tugas PemWeb)">
-                        <input id="eventDate" type="date">
-                        <button id="addEventBtn" class="primary-btn">
+                        <input id="eventName" type="text" placeholder="Nama Agenda (misal: Tugas PemWeb)" 
+                               aria-label="Nama agenda cepat">
+                        <input id="eventDate" type="date" aria-label="Tanggal agenda">
+                        <button id="addEventBtn" class="primary-btn" aria-label="Tambah sebagai tugas">
                             <i class='bx bx-plus'></i>
                             Tambah sebagai tugas
                         </button>
@@ -127,7 +133,7 @@
                             <h2>Daftar Agenda</h2>
                             <p id="dateLabel" class="date-label">—</p>
                         </div>
-                        <button id="viewAllTasksBtn" class="secondary-btn">
+                        <button id="viewAllTasksBtn" class="secondary-btn" aria-label="Lihat semua tugas">
                             <i class='bx bx-list-ul'></i>
                             Lihat Semua Tugas
                         </button>
@@ -149,31 +155,34 @@
                 <div class="search-section">
                     <div class="search-box">
                         <i class='bx bx-search'></i>
-                        <input type="text" id="taskSearch" placeholder="Cari tugas...">
+                        <input type="text" id="taskSearch" placeholder="Cari tugas..." 
+                               aria-label="Cari tugas">
                     </div>
                 </div>
 
-                <!-- Add Task Form -->
+                <!-- Task Form -->
                 <form id="addForm" class="add-form">
                     <div class="form-row">
-                        <input id="taskInput" type="text" placeholder="Tulis tugas (misal: Kerjakan PR Matematika)" required>
-                        <input id="dueDate" type="date" required>
+                        <input id="taskInput" type="text" 
+                               placeholder="Tulis tugas (misal: Kerjakan PR Matematika)" 
+                               required aria-label="Input tugas baru">
+                        <input id="dueDate" type="date" required aria-label="Tanggal jatuh tempo">
                     </div>
                     <div class="form-row">
-                        <select id="priority">
+                        <select id="priority" aria-label="Prioritas tugas">
                             <option value="low">🟢 Rendah</option>
                             <option value="normal" selected>🟡 Normal</option>
                             <option value="high">🔴 Tinggi</option>
                         </select>
-                        <select id="category">
-                            <option value="kuliah">🎓 Kuliah</option>
-                            <option value="praktikum">🧪 Praktikum</option>
-                            <option value="uts">📝 UTS</option>
-                            <option value="uas">📝 UAS</option>
-                            <option value="organisasi">👥 Organisasi</option>
-                            <option value="lainnya">📌 Lainnya</option>
+                        <select id="category" aria-label="Kategori tugas">
+                            <option value="kuliah">Kuliah</option>
+                            <option value="praktikum">Praktikum</option>
+                            <option value="uts">UTS</option>
+                            <option value="uas">UAS</option>
+                            <option value="organisasi">Organisasi</option>
+                            <option value="lainnya">Lainnya</option>
                         </select>
-                        <button type="submit" class="primary-btn">
+                        <button type="submit" class="primary-btn" aria-label="Tambah tugas">
                             <i class='bx bx-plus'></i>
                             Tambah
                         </button>
@@ -184,14 +193,14 @@
                 <div class="filter-section">
                     <div class="filter-group">
                         <label>Filter:</label>
-                        <input id="filterDate" type="date" placeholder="Tanggal">
-                        <select id="filterPriority">
+                        <input id="filterDate" type="date" placeholder="Tanggal" aria-label="Filter berdasarkan tanggal">
+                        <select id="filterPriority" aria-label="Filter berdasarkan prioritas">
                             <option value="">Semua Prioritas</option>
                             <option value="low">Rendah</option>
                             <option value="normal">Normal</option>
                             <option value="high">Tinggi</option>
                         </select>
-                        <button id="clearFilters" class="outline-btn">
+                        <button id="clearFilters" class="outline-btn" aria-label="Reset filter">
                             <i class='bx bx-reset'></i>
                             Reset
                         </button>
@@ -211,8 +220,8 @@
         <div class="reward-content">
             <div class="reward-icon">🎉</div>
             <h3>Yeay! Tugas selesai!</h3>
-            <p>Kamu hebat hari ini — istirahat sebentar atau beri reward kecil untuk dirimu :)</p>
-            <button id="closeReward" class="primary-btn">Tutup</button>
+            <p>Kamu hebat hari ini! Istirahat sebentar atau beri reward kecil untuk dirimu :)</p>
+            <button id="closeReward" class="primary-btn" aria-label="Tutup popup reward">Tutup</button>
         </div>
     </div>
 
@@ -221,7 +230,7 @@
     <div id="tasksPopup" class="tasks-popup">
         <div class="modal-header">
             <h2>Daftar Semua Tugas</h2>
-            <button class="modal-close" id="tasksPopupClose">
+            <button class="modal-close" id="tasksPopupClose" aria-label="Tutup popup tugas">
                 <i class='bx bx-x'></i>
             </button>
         </div>
@@ -246,7 +255,7 @@
             </div>
 
             <div class="tasks-filters">
-                <select id="tasksFilterMonth">
+                <select id="tasksFilterMonth" aria-label="Filter berdasarkan bulan">
                     <option value="">Semua Bulan</option>
                     <option value="0">Januari</option>
                     <option value="1">Februari</option>
@@ -261,18 +270,18 @@
                     <option value="10">November</option>
                     <option value="11">Desember</option>
                 </select>
-                <select id="tasksFilterStatus">
+                <select id="tasksFilterStatus" aria-label="Filter berdasarkan status">
                     <option value="">Semua Status</option>
                     <option value="completed">Selesai</option>
                     <option value="pending">Belum Selesai</option>
                 </select>
-                <select id="tasksFilterPriority">
+                <select id="tasksFilterPriority" aria-label="Filter berdasarkan prioritas">
                     <option value="">Semua Prioritas</option>
                     <option value="high">Tinggi</option>
                     <option value="normal">Normal</option>
                     <option value="low">Rendah</option>
                 </select>
-                <select id="tasksFilterCategory">
+                <select id="tasksFilterCategory" aria-label="Filter berdasarkan kategori">
                     <option value="">Semua Kategori</option>
                     <option value="kuliah">Kuliah</option>
                     <option value="praktikum">Praktikum</option>
@@ -294,7 +303,7 @@
     <div id="editModal" class="edit-modal">
         <div class="modal-header">
             <h2>Edit Tugas</h2>
-            <button class="modal-close" id="editModalClose">
+            <button class="modal-close" id="editModalClose" aria-label="Tutup modal edit">
                 <i class='bx bx-x'></i>
             </button>
         </div>
@@ -304,18 +313,19 @@
                 
                 <div class="form-group">
                     <label for="editTaskText">Nama Tugas *</label>
-                    <input type="text" id="editTaskText" placeholder="Masukkan nama tugas" required>
+                    <input type="text" id="editTaskText" placeholder="Masukkan nama tugas" required
+                           aria-label="Nama tugas yang diedit">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editDueDate">Tanggal Jatuh Tempo *</label>
-                        <input type="date" id="editDueDate" required>
+                        <input type="date" id="editDueDate" required aria-label="Tanggal jatuh tempo yang diedit">
                     </div>
                     
                     <div class="form-group">
                         <label for="editPriority">Prioritas</label>
-                        <select id="editPriority">
+                        <select id="editPriority" aria-label="Prioritas yang diedit">
                             <option value="low">🟢 Rendah</option>
                             <option value="normal">🟡 Normal</option>
                             <option value="high">🔴 Tinggi</option>
@@ -325,27 +335,53 @@
                 
                 <div class="form-group">
                     <label for="editCategory">Kategori</label>
-                    <select id="editCategory">
-                        <option value="kuliah">🎓 Kuliah</option>
-                        <option value="praktikum">🧪 Praktikum</option>
-                        <option value="uts">📝 UTS</option>
-                        <option value="uas">📝 UAS</option>
-                        <option value="organisasi">👥 Organisasi</option>
-                        <option value="lainnya">📌 Lainnya</option>
+                    <select id="editCategory" aria-label="Kategori yang diedit">
+                        <option value="kuliah">Kuliah</option>
+                        <option value="praktikum">Praktikum</option>
+                        <option value="uts">UTS</option>
+                        <option value="uas">UAS</option>
+                        <option value="organisasi">Organisasi</option>
+                        <option value="lainnya">Lainnya</option>
                     </select>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" id="editCancel" class="secondary-btn">
+                    <button type="button" id="editCancel" class="secondary-btn" aria-label="Batal edit">
                         <i class='bx bx-x'></i>
                         Batal
                     </button>
-                    <button type="submit" class="primary-btn">
+                    <button type="submit" class="primary-btn" aria-label="Simpan perubahan">
                         <i class='bx bx-save'></i>
                         Simpan Perubahan
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div class="keyboard-help" id="keyboardHelp">
+        <div class="help-content">
+            <h3>🛠️ Pintasan Keyboard</h3>
+            <div class="shortcut-list">
+                <div class="shortcut-item">
+                    <kbd>Enter</kbd>
+                    <span>Simpan tugas baru</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Double Click</kbd>
+                    <span>Edit cepat tugas</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + E</kbd>
+                    <span>Edit tugas pertama</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Escape</kbd>
+                    <span>Tutup modal/popup</span>
+                </div>
+            </div>
+            <button class="help-close" id="helpClose">Mengerti</button>
         </div>
     </div>
 
