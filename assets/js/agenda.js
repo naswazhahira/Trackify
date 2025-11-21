@@ -1,58 +1,46 @@
-    // sidebar functionality
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const closeSidebar = document.getElementById('closeSidebar');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
+// sidebar functionality
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const closeSidebar = document.getElementById('closeSidebar');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
 
-    console.log(' Element check:');
-    console.log('- Hamburger Button:', hamburgerBtn);
-    console.log('- Close Sidebar:', closeSidebar);
-    console.log('- Sidebar:', sidebar);
-    console.log('- Overlay:', overlay);
-
-    // Buka sidebar
-    if (hamburgerBtn) {
-        hamburgerBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log(' Hamburger diklik');
-            sidebar.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-    } else {
-        console.error(' Hamburger button tidak ditemukan');
-    }
-
-    // Tutup sidebar
-    if (closeSidebar) {
-        closeSidebar.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log(' Close sidebar diklik');
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-    }
-
-    // Tutup sidebar ketika overlay diklik
-    if (overlay) {
-        overlay.addEventListener('click', function() {
-            console.log(' Overlay diklik');
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-    }
-
-    // Tutup sidebar ketika ESC ditekan
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && sidebar.classList.contains('active')) {
-            console.log('ESC ditekan');
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+// Buka sidebar
+if (hamburgerBtn) {
+    hamburgerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
     });
+}
+
+// Tutup sidebar
+if (closeSidebar) {
+    closeSidebar.addEventListener('click', function(e) {
+        e.preventDefault();
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+// Tutup sidebar ketika overlay diklik
+if (overlay) {
+    overlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+// Tutup sidebar ketika ESC ditekan
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     // State & Konfigurasi
@@ -1044,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
         percentText.textContent = percent + '%';
         progressFill.style.width = percent + '%';
 
+        // PERBAIKAN: Cek apakah SEMUA tugas di tanggal yang dipilih sudah selesai
         if (total > 0 && done === total) {
             // Pastikan ini adalah semua tugas di tanggal yang sedang dilihat
             const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
@@ -1055,16 +1044,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Reward Functions 
+    // Reward Functions
     function showReward() {
         // Update konten reward popup untuk semua tugas
         const rewardContent = document.querySelector('.reward-content');
         if (rewardContent) {
             rewardContent.innerHTML = `
-                <div class="reward-icon">🎉</div>
+                <div class="reward-icon"></div>
                 <h3>Selamat! Semua Tugas Selesai!</h3>
                 <p>Kamu telah menyelesaikan <strong>semua tugas</strong> untuk tanggal ${formatDateDisplay(selectedDate)}. Luar biasa!</p>
-                <p>Istirahat sebentar atau beri reward kecil untuk dirimu</p>
+                <p>Istirahat sebentar atau beri reward kecil untuk dirimu </p>
                 <button id="closeReward" class="primary-btn" aria-label="Tutup popup reward">Tutup</button>
             `;
             
@@ -1089,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', function() {
         rewardPopup.classList.remove('show');
     }
 
-    // Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
+    // PERBAIKAN: Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
     function checkAllTasksCompleted(date) {
         const tasksForDate = todos.filter(t => t.date === date);
         return tasksForDate.length > 0 && tasksForDate.every(t => t.completed);
