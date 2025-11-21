@@ -1023,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notificationManager.showMessage('Filter direset', 'info', 2000);
     }
 
-    // Progress Functions - PERBAIKAN UTAMA: Reward hanya ketika semua tugas selesai
+    // Progress Functions
     function updateProgress(list) {
         const total = list.length;
         const done = list.filter(t => t.completed).length;
@@ -1044,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Reward Functions - PERBAIKAN UTAMA: Motivasi untuk menyelesaikan semua tugas
+    // Reward Functions
     function showReward() {
         // Update konten reward popup untuk semua tugas
         const rewardContent = document.querySelector('.reward-content');
