@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Update progress dengan semua tugas di tanggal yang dipilih
+        // PERBAIKAN: Update progress dengan semua tugas di tanggal yang dipilih
         const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
         updateProgress(allTasksForSelectedDate);
         attachTodoEvents();
@@ -1045,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressFill.style.width = percent + '%';
 
         if (total > 0 && done === total) {
+            // Pastikan ini adalah semua tugas di tanggal yang sedang dilihat
             const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
             const allCompleted = allTasksForSelectedDate.every(t => t.completed);
             
@@ -1054,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Reward Functions - PERBAIKAN UTAMA: Motivasi untuk menyelesaikan semua tugas
+    // Reward Functions 
     function showReward() {
         // Update konten reward popup untuk semua tugas
         const rewardContent = document.querySelector('.reward-content');
@@ -1088,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', function() {
         rewardPopup.classList.remove('show');
     }
 
-    // PERBAIKAN: Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
+    // Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
     function checkAllTasksCompleted(date) {
         const tasksForDate = todos.filter(t => t.date === date);
         return tasksForDate.length > 0 && tasksForDate.every(t => t.completed);
