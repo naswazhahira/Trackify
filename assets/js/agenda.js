@@ -1,4 +1,4 @@
-// sidebar functionality - PERBAIKAN UTAMA
+// sidebar functionality
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const closeSidebar = document.getElementById('closeSidebar');
 const sidebar = document.getElementById('sidebar');
@@ -122,6 +122,16 @@ document.addEventListener('DOMContentLoaded', function() {
         'high': 'Tinggi'
     };
 
+    // Category mapping
+    const categoryLabels = {
+        'kuliah': 'Kuliah',
+        'praktikum': 'Praktikum',
+        'uts': 'UTS',
+        'uas': 'UAS',
+        'organisasi': 'Organisasi',
+        'lainnya': 'Lainnya'
+    };
+
     // Notification Manager
     class NotificationManager {
         constructor() {
@@ -220,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (urgentTasks.length > 0) {
                 const urgentTask = urgentTasks[0];
-                reminderTitle.textContent = 'Pengingat Deadline!';
+                reminderTitle.textContent = '⏰ Pengingat Deadline!';
                 reminderMessage.textContent = `"${urgentTask.text}" deadline besok!`;
             }
 
@@ -295,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filterPriority.addEventListener('change', applyFilters);
         clearFilters.addEventListener('click', resetFilters);
 
-        // Search - PERBAIKAN UTAMA
+        // Search
         taskSearch.addEventListener('input', function() {
             applyFilters();
         });
@@ -509,22 +519,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getFilteredTodos() {
+        // Hanya ambil tugas dari tanggal yang dipilih
         let filtered = todos.filter(t => t.date === selectedDate);
         
         const dateFilter = filterDate.value;
         const priorityFilter = filterPriority.value;
         const searchTerm = taskSearch.value.toLowerCase().trim();
         
+        // Filter tambahan berdasarkan tanggal jika ada filter tanggal
         if (dateFilter) {
             filtered = filtered.filter(t => t.date === dateFilter);
         }
+        
         if (priorityFilter) {
             filtered = filtered.filter(t => t.priority === priorityFilter);
         }
+        
         if (searchTerm) {
             filtered = filtered.filter(t => 
                 t.text.toLowerCase().includes(searchTerm) ||
-                t.category.toLowerCase().includes(searchTerm) ||
+                categoryLabels[t.category].toLowerCase().includes(searchTerm) ||
                 priorityLabels[t.priority].toLowerCase().includes(searchTerm)
             );
         }
@@ -550,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.innerHTML = `
                     <div style="text-align: center; color: #666; padding: 20px;">
                         <i class='bx bx-search' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                        <div>Tidak ada tugas yang sesuai dengan pencarian "${searchTerm}".</div>
+                        <div>Tidak ada tugas di tanggal ${formatDateDisplay(selectedDate)} yang sesuai dengan pencarian "${searchTerm}".</div>
                         <p class="helper-text">Coba kata kunci lain atau hapus pencarian</p>
                     </div>
                 `;
@@ -558,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.innerHTML = `
                     <div style="text-align: center; color: #666; padding: 20px;">
                         <i class='bx bx-filter-alt' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                        <div>Tidak ada tugas yang sesuai dengan filter.</div>
+                        <div>Tidak ada tugas di tanggal ${formatDateDisplay(selectedDate)} yang sesuai dengan filter.</div>
                         <p class="helper-text">Coba ubah filter atau reset filter</p>
                     </div>
                 `;
@@ -566,20 +580,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.innerHTML = `
                     <div style="text-align: center; color: #666; padding: 20px;">
                         <i class='bx bx-calendar-x' style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                        <div>Tidak ada tugas untuk tanggal ini.</div>
+                        <div>Tidak ada tugas untuk tanggal ${formatDateDisplay(selectedDate)}.</div>
                         <p class="helper-text">Tambahkan tugas baru menggunakan form di atas</p>
                     </div>
                 `;
             }
             todoListEl.appendChild(empty);
         } else {
+            // Urutkan tugas: yang belum selesai dulu, lalu berdasarkan tanggal
+            filtered.sort((a, b) => {
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+                return new Date(a.date) - new Date(b.date);
+            });
+
             filtered.forEach(todo => {
                 const todoEl = createTodoElement(todo);
                 todoListEl.appendChild(todoEl);
             });
         }
 
-        updateProgress(filtered);
+        // Update progress dengan semua tugas di tanggal yang dipilih
+        const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
+        updateProgress(allTasksForSelectedDate);
         attachTodoEvents();
     }
 
@@ -598,9 +622,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="todo-content">
                 <div class="todo-title">${escapeHtml(todo.text)}</div>
                 <div class="todo-meta">
-                    <span class="todo-chip">${capitalizeLabel(todo.category)}</span>
+                    <span class="todo-chip">${categoryLabels[todo.category]}</span>
                     <span class="todo-chip">${formatDateDisplay(todo.date)}</span>
-                    ${todo.priority !== 'normal' ? `<span class="todo-chip">${capitalizeLabel(todo.priority)}</span>` : ''}
+                    ${todo.priority !== 'normal' ? `<span class="todo-chip">${priorityLabels[todo.priority]}</span>` : ''}
                     ${updatedIndicator}
                     ${overdue ? '<span class="todo-chip" style="background:#ffcccc;">Terlambat</span>' : ''}
                 </div>
@@ -626,12 +650,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const id = checkbox.dataset.id;
                 const todo = todos.find(t => t.id === id);
                 if (todo) {
+                    const wasCompleted = todo.completed;
                     todo.completed = !todo.completed;
                     saveTodos();
                     renderTodos();
                     renderCalendar();
                     updateReminders();
                     
+                    // Tampilkan pesan untuk tugas individual
                     notificationManager.showMessage(
                         todo.completed ? 'Tugas diselesaikan! ✓' : 'Tugas ditandai belum selesai', 
                         'success',
@@ -667,10 +693,29 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Double click to edit 
+        // Double click to edit
         document.querySelectorAll('.todo-item').forEach(item => {
-            item.addEventListener('dblclick', (e) => {
-                if (!e.target.closest('.todo-checkbox') && !e.target.closest('.todo-actions')) {
+            let clickCount = 0;
+            let clickTimer = null;
+            
+            item.addEventListener('click', (e) => {
+                // Skip jika klik pada elemen yang tidak boleh trigger double click
+                if (e.target.closest('.todo-checkbox') || 
+                    e.target.closest('.todo-actions') || 
+                    e.target.closest('.edit-input')) {
+                    return;
+                }
+                
+                clickCount++;
+                
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(() => {
+                        clickCount = 0;
+                    }, 300);
+                } else if (clickCount === 2) {
+                    clearTimeout(clickTimer);
+                    clickCount = 0;
+                    
                     const id = item.querySelector('.todo-checkbox').dataset.id;
                     const todo = todos.find(t => t.id === id);
                     if (todo && !todo.completed) {
@@ -760,6 +805,133 @@ document.addEventListener('DOMContentLoaded', function() {
         notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
     }
 
+    // Inline Edit Functions
+    function enableInlineEdit(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
+        
+        if (!todo || !todoElement) {
+            console.error('Todo tidak ditemukan untuk edit inline:', todoId);
+            return;
+        }
+        
+        // Set editing mode
+        todoElement.classList.add('editing');
+        
+        const currentContent = todoElement.querySelector('.todo-content');
+        if (!currentContent) {
+            console.error('Elemen todo-content tidak ditemukan');
+            return;
+        }
+        
+        // Simpan konten asli untuk fallback
+        const originalContent = currentContent.innerHTML;
+        
+        currentContent.innerHTML = `
+            <input type="text" class="edit-input" value="${escapeHtml(todo.text)}" placeholder="Nama tugas...">
+            <div class="edit-actions">
+                <button type="button" class="edit-save" data-id="${todoId}">
+                    <i class='bx bx-check'></i> Simpan
+                </button>
+                <button type="button" class="edit-cancel" data-id="${todoId}">
+                    <i class='bx bx-x'></i> Batal
+                </button>
+            </div>
+        `;
+        
+        const input = currentContent.querySelector('.edit-input');
+        if (!input) {
+            console.error('Input edit tidak ditemukan');
+            currentContent.innerHTML = originalContent;
+            return;
+        }
+        
+        // Focus dan select semua text
+        input.focus();
+        input.select();
+        
+        // Event listeners untuk tombol inline
+        const saveBtn = currentContent.querySelector('.edit-save');
+        const cancelBtn = currentContent.querySelector('.edit-cancel');
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => saveInlineEdit(todoId));
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => cancelInlineEdit(todoId));
+        }
+        
+        // Enter to save, Escape to cancel
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveInlineEdit(todoId);
+            } else if (e.key === 'Escape') {
+                cancelInlineEdit(todoId);
+            }
+        });
+        
+        // Click outside to save
+        const outsideClickHandler = (e) => {
+            if (!todoElement.contains(e.target)) {
+                saveInlineEdit(todoId);
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        };
+        
+        // Delay sedikit untuk menghindari trigger langsung
+        setTimeout(() => {
+            document.addEventListener('click', outsideClickHandler);
+        }, 100);
+    }
+
+    function saveInlineEdit(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
+        
+        if (!todo || !todoElement) {
+            console.error('Todo tidak ditemukan untuk disimpan:', todoId);
+            return;
+        }
+        
+        const input = todoElement.querySelector('.edit-input');
+        if (!input) {
+            console.error('Input edit tidak ditemukan untuk disimpan');
+            return;
+        }
+        
+        const newText = input.value.trim();
+        
+        if (!newText) {
+            notificationManager.showMessage('Nama tugas tidak boleh kosong!', 'error');
+            input.focus();
+            return;
+        }
+        
+        if (newText === todo.text) {
+            // Tidak ada perubahan, cukup batalkan
+            cancelInlineEdit(todoId);
+            return;
+        }
+        
+        // Update todo data
+        todo.text = newText;
+        todo.updatedAt = Date.now();
+        
+        saveTodos();
+        renderTodos(); // Render ulang untuk menampilkan perubahan
+        
+        notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
+    }
+
+    function cancelInlineEdit(todoId) {
+        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`)?.closest('.todo-item');
+        if (todoElement) {
+            todoElement.classList.remove('editing');
+        }
+        renderTodos(); // Render ulang untuk kembali ke tampilan normal
+    }
+
     function addTodo(e) {
         e.preventDefault();
         
@@ -838,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2500);
     }
 
-    // Filter Functions - PERBAIKAN UTAMA
+    // Filter Functions
     function applyFilters() {
         renderTodos();
     }
@@ -861,18 +1033,53 @@ document.addEventListener('DOMContentLoaded', function() {
         progressFill.style.width = percent + '%';
 
         if (total > 0 && done === total) {
-            showReward();
+            const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
+            const allCompleted = allTasksForSelectedDate.every(t => t.completed);
+            
+            if (allCompleted && allTasksForSelectedDate.length > 0) {
+                showReward();
+            }
         }
     }
 
-    // Reward Functions
+    // Reward Functions - PERBAIKAN UTAMA: Motivasi untuk menyelesaikan semua tugas
     function showReward() {
+        // Update konten reward popup untuk semua tugas
+        const rewardContent = document.querySelector('.reward-content');
+        if (rewardContent) {
+            rewardContent.innerHTML = `
+                <div class="reward-icon">🎉</div>
+                <h3>Selamat! Semua Tugas Selesai!</h3>
+                <p>Kamu telah menyelesaikan <strong>semua tugas</strong> untuk tanggal ${formatDateDisplay(selectedDate)}. Luar biasa!</p>
+                <p>Istirahat sebentar atau beri reward kecil untuk dirimu</p>
+                <button id="closeReward" class="primary-btn" aria-label="Tutup popup reward">Tutup</button>
+            `;
+            
+            // Re-attach event listener untuk tombol close
+            const closeBtn = document.getElementById('closeReward');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', hideReward);
+            }
+        }
+        
         rewardPopup.classList.add('show');
-        setTimeout(hideReward, 5000);
+        
+        // Auto hide setelah 8 detik
+        setTimeout(() => {
+            if (rewardPopup.classList.contains('show')) {
+                hideReward();
+            }
+        }, 8000);
     }
 
     function hideReward() {
         rewardPopup.classList.remove('show');
+    }
+
+    // PERBAIKAN: Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
+    function checkAllTasksCompleted(date) {
+        const tasksForDate = todos.filter(t => t.date === date);
+        return tasksForDate.length > 0 && tasksForDate.every(t => t.completed);
     }
 
     // Tasks Popup Functions
@@ -1002,8 +1209,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="task-popup-content">
                 <div class="task-popup-title">${escapeHtml(task.text)}</div>
                 <div class="task-popup-meta">
-                    <span class="task-popup-chip">${capitalizeLabel(task.category)}</span>
-                    <span class="task-popup-chip">${capitalizeLabel(task.priority)}</span>
+                    <span class="task-popup-chip">${categoryLabels[task.category]}</span>
+                    <span class="task-popup-chip">${priorityLabels[task.priority]}</span>
                     ${isOverdue ? '<span class="task-popup-chip" style="background:#ffcccc;">Terlambat</span>' : ''}
                     <span class="task-popup-chip">${formatDateDisplay(task.date)}</span>
                     ${updatedIndicator}
@@ -1100,21 +1307,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
-    }
-
-    function capitalizeLabel(key) {
-        const map = {
-            'kuliah': 'Kuliah',
-            'praktikum': 'Praktikum',
-            'uts': 'UTS',
-            'uas': 'UAS',
-            'organisasi': 'Organisasi',
-            'lainnya': 'Lainnya',
-            'low': 'Rendah',
-            'normal': 'Normal',
-            'high': 'Tinggi'
-        };
-        return map[key] || key;
     }
 
     function formatDateDisplay(dateStr) {
