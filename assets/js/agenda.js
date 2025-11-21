@@ -1,4 +1,59 @@
-// jadwal.js - Jadwal & To-Do List
+    // sidebar functionality
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    console.log(' Element check:');
+    console.log('- Hamburger Button:', hamburgerBtn);
+    console.log('- Close Sidebar:', closeSidebar);
+    console.log('- Sidebar:', sidebar);
+    console.log('- Overlay:', overlay);
+
+    // Buka sidebar
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log(' Hamburger diklik');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    } else {
+        console.error(' Hamburger button tidak ditemukan');
+    }
+
+    // Tutup sidebar
+    if (closeSidebar) {
+        closeSidebar.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log(' Close sidebar diklik');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Tutup sidebar ketika overlay diklik
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            console.log(' Overlay diklik');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Tutup sidebar ketika ESC ditekan
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && sidebar.classList.contains('active')) {
+            console.log('ESC ditekan');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
 document.addEventListener('DOMContentLoaded', function() {
     // State & Konfigurasi
     const STORAGE_KEY = 'trackify_todos_v8'; // Update version untuk fitur edit
@@ -248,11 +303,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Setup Event Listeners
     function setupEventListeners() {
-        // Sidebar Navigation
-        hamburgerIcon.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-        sidebarClose.addEventListener('click', toggleSidebar);
-
         // Calendar Navigation
         prevBtn.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
