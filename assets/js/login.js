@@ -81,6 +81,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return users.find((u) => u.username.toLowerCase() === username.toLowerCase());
     };
 
+// Handler untuk error inline
+  function setError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message || '';
+    if (message) {
+      el.classList.remove('hidden');
+      el.classList.add('show');
+      const input = el.previousElementSibling;
+      if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA')) {
+        input.classList.add('error');
+      }
+    } else {
+      el.classList.remove('show');
+      el.classList.add('hidden');
+      const input = el.previousElementSibling;
+      if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA')) {
+        input.classList.remove('error');
+      }
+    }
+  }
+
+  function clearAllErrorsInForm(formEl) {
+    if (!formEl) return;
+    const errs = formEl.querySelectorAll('.error-text');
+    errs.forEach(e => {
+      e.textContent = '';
+      e.classList.remove('show');
+      e.classList.add('hidden');
+      const input = e.previousElementSibling;
+      if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA')) {
+        input.classList.remove('error');
+      }
+    });
+  }
 
 // Pop-up Handler
     function showPopup(messageHtml, withCopy = false, copyText = '') {
@@ -185,49 +220,74 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+// Attach input listeners to clear per-field error on input
+  const mapInputsToErrors = [
+    {input: loginUsername, errId: 'err-login-username'},
+    {input: loginPassword, errId: 'err-login-password'},
+    {input: registerFullname, errId: 'err-register-namalengkap'},
+    {input: registerUsername, errId: 'err-register-username'},
+    {input: registerPassword, errId: 'err-register-password'},
+    {input: lupaUsername, errId: 'err-lupa-username'},
+    {input: lupaPin, errId: 'err-lupa-pin'},
+    {input: resetPassword, errId: 'err-reset-password'}
+  ];
+
+  mapInputsToErrors.forEach(mapping => {
+    if (!mapping.input) return;
+    mapping.input.addEventListener('input', () => {
+      setError(mapping.errId, '');
+    });
+  });
 
     // Formulir Input Registrasi
     if (formRegister){
         formRegister.addEventListener('submit', (e) => {
             e.preventDefault();
+            clearAllErrorsInForm(formRegister);
 
 
             const fullname = (registerFullname && registerFullname.value || '').trim();
             const username = (registerUsername && registerUsername.value || '').trim();
             const password = (registerPassword && registerPassword.value || '').trim();
 
+            let valid = true;
 
-            if (!fullname || !username || !password) {
-            showPopup('Silakan isi semua kolom yang disediakan.');
-            return;
+            if (!fullname) {
+            setError('err-register-namalengkap', 'Nama lengkap wajib diisi');
+            valid = false;
             }
 
-
-            if (password.length < 5) {
-            showPopup('Password minimal terdiri dari 5 karakter.');
-            return;
+            if (!username) {
+            setError('err-register-username', 'Nama pengguna wajib diisi');
+            valid = false;
             }
 
+            if (!password) {
+            setError('err-register-password', 'Kata sandi wajib diisi');
+            valid = false;
+            }
+            else if (password.length < 5) {
+            setError('err-register-password', 'Kata sandi minimal terdiri dari 5 karakter');
+            valid = false;
+            }
+
+            if(!valid) return;
 
             if (findUser(username)) {
             showPopup('Username sudah digunakan. Silakan pilih username lain.');
             return;
             }
 
-
             // Buat PIN 4 digit (string)
             const pin = String(Math.floor(1000 + Math.random() * 9000));
-
 
             //Simpan informasi registrasi
             const users = loadUsers();
             users.push({fullname, username, password, pin });
             saveUsers(users);
 
-
             //Pop-up informasi registrasi berhasil
             formRegister.reset();
-
 
             showPopup(`Registrasi berhasil!<br>Pin pemulihan akun: <strong>${pin}</strong><br>Silakan melakukan login kembali!`, true, pin); 
            
@@ -245,17 +305,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formLogin) {
         formLogin.addEventListener('submit', (e) => {
             e.preventDefault();
+            clearAllErrorsInForm(formLogin);
+
             const username = (loginUsername && loginUsername.value || '').trim();
             const password = (loginPassword && loginPassword.value || '').trim();
 
+            let valid = true;
 
-
-
-            if (!username || !password) {
-            showPopup('Silakan isi username serta password pada kolom yang disediakan.');
-            return;
+            if (!username) {
+            setError('err-login-username', 'Nama pengguna wajib diisi');
+            valid = false;
             }
 
+            if (!password) {
+              setError('err-login-password', 'Kata sandi wajib diisi');
+              valid = false;
+            } 
+            else if (password.length < 5) {
+              setError('err-login-password', 'Kata sandi minimal terdiri dari 5 karakter');
+              valid = false;
+            }
+
+            if (!valid) return;
 
             const user = findUser(username);
             if (!user) {
@@ -265,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             if (user.password !== password) {
-            showPopup('Password salah. Silakan coba lagi.');
+            setError('err-login-password', 'Kata sandi salah. Silakan coba lagi.');
             return;
             }
 
@@ -286,16 +357,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formLupa) {
         formLupa.addEventListener('submit', (e) => {
         e.preventDefault();
+        clearAllErrorsInForm(formLupa);
 
 
         const username = (lupaUsername && lupaUsername.value || '').trim();
         const pin = (lupaPin && lupaPin.value || '').trim();
 
+        let valid = true;
 
-        if (!username || !pin) {
-            showPopup('Silakan isi username dan PIN pemulihan.');
-            return;
+        if (!username) {
+        setError('err-lupa-username', 'Nama pengguna wajib diisi');
+        valid = false;
         }
+
+        if (!pin) {
+        setError('err-lupa-pin', 'PIN pemulihan wajib diisi');
+        valid = false;
+        } 
+        else if (pin.length < 4) {
+        setError('err-lupa-pin', 'PIN harus terdiri dari 4 digit angka');
+        valid = false;
+        }
+
+        if(!valid) return;
 
 
         const user = findUser(username);
@@ -306,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         if (user.pin !== pin) {
-            showPopup('PIN tidak sesuai.');
+            setError('err-lupa-pin', 'PIN tidak sesuai.');
             return;
         }
 
@@ -331,18 +415,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formReset) {
         formReset.addEventListener('submit', (e) => {
         e.preventDefault();
+        clearAllErrorsInForm(formReset);
 
 
         const passNew = (resetPassword && resetPassword.value || '').trim();
         if (!passNew) {
-            showPopup('Silakan isi password baru.');
+            setError('err-reset-password', 'Silakan masukkan kata sandi baru.');
             return;
         }
         if (passNew.length < 5) {
-            showPopup('Password minimal terdiri dari 5 karakter.');
+            setError('err-reset-password', 'Kata sandi minimal terdiri dari 5 karakter.');
             return;
         }
-
 
         const users = loadUsers();
         const idx = users.findIndex(u => u.username === currentResetUser);
@@ -356,7 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentResetUser = null;
         formReset.reset();
-
 
         showPopup('Password berhasil diubah. Silakan login dengan password baru.');
         const onOk = () => {
