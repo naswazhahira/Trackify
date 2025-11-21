@@ -59,11 +59,13 @@
                         <div class="form-group">
                             <label for="login-username">Nama pengguna</label>
                             <input type="text" id="login-username" name="username" placeholder="Masukkan Nama Pengguna" required>
+                            <p id="err-login-username" class="error-text hidden"></p>
                         </div>
 
                         <div class="form-group">
                             <label for="login-password">Kata sandi</label>
                             <input type="password" id="login-password" name="password" placeholder="Masukkan Kata Sandi" required minlength="5">
+                            <p id="err-login-password" class="error-text hidden"></p>
                         </div>
 
                         <button type="submit" id="tombolLogin" class="tombolPrimer">
@@ -94,16 +96,19 @@
                         <div class="form-group">
                             <label for="register-namalengkap">Nama Lengkap</label>
                             <input type="text" id="register-namalengkap" name="nama_lengkap" placeholder="Masukkan nama lengkap" required>
+                            <p id="err-register-namalengkap" class="error-text hidden"></p>
                         </div>
 
                         <div class="form-group">
                             <label for="register-username">Nama Pengguna</label>
                             <input type="text" id="register-username" name="username" placeholder="Buat nama pengguna unik" required>
+                            <p id="err-register-username" class="error-text hidden"></p>
                         </div>
 
                         <div class="form-group">
                             <label for="register-password">Kata Sandi</label>
                             <input type="password" id="register-password" name="password" placeholder="Buat kata sandi (min. 5 karakter)" required minlength="5">
+                            <p id="err-register-password" class="error-text hidden"></p>
                         </div>
 
                         <div class="tombolFormulir">
@@ -126,11 +131,13 @@
                         <div class="form-group">
                             <label for="lupa-username">Nama Pengguna</label>
                             <input type="text" id="lupa-username" name="username" placeholder="Masukkan nama pengguna" required>
+                            <p id="err-lupa-username" class="error-text hidden"></p>
                         </div>
 
                         <div class="form-group">
                             <label for="lupa-pin">PIN Pemulihan</label>
                             <input type="password" id="lupa-pin" name="pin" placeholder="Masukkan PIN 4 digit" required minlength="4">
+                            <p id="err-lupa-pin" class="error-text hidden"></p>
                         </div>
 
                         <div class="tombolFormulir">
@@ -151,10 +158,11 @@
                         <div class="form-group">
                             <label for="reset-password">Kata Sandi Baru</label>
                             <input type="password" id="reset-password" name="password_baru" placeholder="Masukkan password baru" required>
+                            <p id="err-reset-password" class="error-text hidden"></p>
                         </div>
 
                         <div class="tombolFormulir">
-                            <button type="submit" id="tombolSimpanPassword" class="tombolPrimer">Simpan Kata Sandi</button>
+                            <button type="submit" id="tombolSimpanPassword" class="tombolPrimer">Simpan</button>
                             <button type="button" id="tombolBatalReset" class="tombolSekunder">Batal</button>
                         </div>
                     </form>
