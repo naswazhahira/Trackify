@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   const USERS_KEY = 'trackify_users';
+  const ACTIVE_USER_KEY = 'activeUser';
   let currentResetUser = null;
 
 
@@ -283,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             //Simpan informasi registrasi
             const users = loadUsers();
-            users.push({fullname, username, password, pin });
+            users.push({fullname, username, password, pin, profilePic: null });
             saveUsers(users);
 
             //Pop-up informasi registrasi berhasil
@@ -340,10 +341,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
             }
 
+            try {
+              localStorage.setItem(ACTIVE_USER_KEY, username);
+            } catch (err) {
+              console.warn('Gagal menyimpan active user di localStorage', err);
+            }
 
             // Pesan Selamat bila Username dan Password benar
             showPopup(`Selamat datang kembali, ${user.fullname || user.username}!`);
-
 
             // Redirect ke beranda.html setelah 2 detik
             setTimeout(() => {
@@ -352,13 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // Formulir Input Pemulihan Akun
     if (formLupa) {
         formLupa.addEventListener('submit', (e) => {
         e.preventDefault();
         clearAllErrorsInForm(formLupa);
-
 
         const username = (lupaUsername && lupaUsername.value || '').trim();
         const pin = (lupaPin && lupaPin.value || '').trim();
@@ -381,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(!valid) return;
 
-
         const user = findUser(username);
         if (!user) {
             showPopup('Username tidak ditemukan.');
@@ -394,10 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-
         // Bila berhasil
         currentResetUser = user.username;
-
 
         // Alihkan ke panel reset password
         showPopup('Verifikasi berhasil. Silakan buat password baru.');
