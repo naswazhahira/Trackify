@@ -9,7 +9,6 @@
     font-family: "Poppins", sans-serif;
 }
 
-
 :root {
     --primary-color: #9EC6F3;
     --secondary-color: #E8DFCA;
@@ -23,14 +22,12 @@
     --warning-color: #ffa726;
 }
 
-
 body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding-bottom: 20px;
     color: var(--text-color);
 }
-
 
 /* Navigation */
 nav {
@@ -44,7 +41,6 @@ nav {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-
 .wrapper-nav {
     width: 100%;
     margin: auto;
@@ -54,7 +50,6 @@ nav {
     padding-left: 0;
     padding-right: 5px;
 }
-
 
 .back-icon {
     color: var(--primary-color);
@@ -67,12 +62,10 @@ nav {
     transition: all 0.3s ease;
 }
 
-
 .back-icon:hover {
     color: var(--accent-color);
     transform: translateX(-3px);
 }
-
 
 .nav-title {
     font-size: 28px;
@@ -83,85 +76,79 @@ nav {
     letter-spacing: 1px;
 }
 
-
 .container {
     width: 90%;
-    max-width: 500px;
+    max-width: 450px;
+    min-height: 490px;
+    max-height: 600px;
     background: var(--bg-color);
     border-radius: 20px;
-    padding: 40px;
+    padding: 20px 25px;
     margin: 30px auto;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-
 /* Profile Card */
 .profile-card {
     text-align: center;
 }
 
-
 .avatar-section {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
-
 
 .avatar {
     position: relative;
     display: inline-block;
-    margin-bottom: 20px;
 }
-
 
 .avatar img {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    border: 4px solid var(--bg-color);
+    border: 4px solid #667eea;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     object-fit: cover;
 }
 
-
-.avatar .icon {
+.edit-icon {
     position: absolute;
     bottom: 5px;
     right: 5px;
     background: linear-gradient(135deg, var(--primary-color), #667eea);
     color: white;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-
-.avatar .icon:hover {
+.edit-icon:hover {
     transform: scale(1.1);
     background: linear-gradient(135deg, #667eea, var(--accent-color));
 }
-
 
 .profile-info {
     text-align: left;
 }
 
+.form-field { 
+    margin-bottom: 20px; 
+}
 
 .field {
     margin-bottom: 25px;
 }
 
-
-.field label {
+.field label, .form-field label {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
@@ -169,21 +156,18 @@ nav {
     font-size: 14px;
 }
 
-
 .input-display {
     background: rgba(158, 198, 243, 0.1);
     border: 2px solid var(--primary-color);
     border-radius: 12px;
-    padding: 12px 16px;
+    padding: 10px 12px;
     transition: all 0.3s ease;
 }
-
 
 .input-display:hover {
     background: rgba(158, 198, 243, 0.2);
     border-color: var(--accent-color);
 }
-
 
 .input-display p {
     margin: 0;
@@ -192,38 +176,36 @@ nav {
     font-size: 16px;
 }
 
-
 .action-buttons {
-    margin-top: 30px;
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px; 
+    justify-content: space-between;
 }
 
-
-.edit-btn {
-    background: linear-gradient(135deg, var(--primary-color), #667eea);
-    color: white;
-    border: none;
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
+.edit-btn, .password-btn {
+    flex: 1; 
+    padding: 12px; 
     font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    background: #719fd4;
+    color: white;
 }
 
 
-.edit-btn:hover {
+.edit-btn:hover, .password-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #667eea, var(--accent-color));
+    background: #687cd4;
 }
-
 
 .delete-btn {
     background: transparent;
@@ -240,8 +222,8 @@ nav {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    margin-top: 12px;
 }
-
 
 .delete-btn:hover {
     background: var(--danger-color);
@@ -250,8 +232,48 @@ nav {
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
+/* Tombol Edit Actions (Simpan dan Batal) */
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
 
-/* Modal Styles */
+.save-btn, .cancel-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, var(--primary-color), #667eea);
+    color: white;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #667eea, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.cancel-btn {
+    background: rgba(158, 198, 243, 0.2);
+    color: var(--text-color);
+    border: 2px solid var(--primary-color);
+}
+
+.cancel-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+
+/* Tampilan pop-up */
 .overlay {
     display: none;
     position: fixed;
@@ -264,7 +286,6 @@ nav {
     z-index: 1000;
 }
 
-
 .modal {
     display: none;
     position: fixed;
@@ -274,12 +295,11 @@ nav {
     background: var(--bg-color);
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
+    z-index: 1000;
     width: 90%;
-    max-width: 400px;
+    max-width: 420px;
     animation: modalAppear 0.3s ease;
 }
-
 
 @keyframes modalAppear {
     from {
@@ -292,29 +312,69 @@ nav {
     }
 }
 
-
-.modal-content {
-    padding: 0;
-}
-
-
 .modal-header {
     background: linear-gradient(135deg, var(--primary-color), #667eea);
     color: white;
-    padding: 20px;
-    border-radius: 20px 20px 0 0;
+    padding: 14px 18px;
+    border-radius: 15px 15px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+/* Header dari pop-up Kelola Password */
+.modal-tabs { 
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Tab Kelola password*/
+.tab { 
+    flex: 1; 
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border: 1px solid transparent;
+    box-shadow: none;
+    user-select: none;
+}
+
+/* Tab aktif */
+.tab.active { 
+    background: var(--bg-color);
+    color: var(--text-color);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+
+.tab:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.14);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.tab-content { 
+    display: block; 
+    margin-top: 6px;
+}
 
 .modal-header h2 {
-    margin: 0;
+    margin-left: 5px;
     font-size: 20px;
     font-weight: 600;
 }
-
 
 .close-modal {
     font-size: 24px;
@@ -322,22 +382,15 @@ nav {
     transition: all 0.3s ease;
 }
 
-
 .close-modal:hover {
     color: var(--accent-color);
     transform: scale(1.1);
 }
 
-
-.modal-body {
-    padding: 25px;
-}
-
-
 .modal-option {
     width: 100%;
     padding: 15px;
-    background: rgba(158, 198, 243, 0.1);
+    background: rgba(56, 132, 219, 0.219);
     border: 2px solid transparent;
     border-radius: 12px;
     margin-bottom: 12px;
@@ -351,19 +404,122 @@ nav {
     color: var(--text-color);
 }
 
-
 .modal-option:hover {
     background: rgba(158, 198, 243, 0.2);
     border-color: var(--primary-color);
     transform: translateX(5px);
 }
 
-
 .modal-option i {
     font-size: 20px;
     color: var(--primary-color);
 }
 
+/* Password Modal Tab */
+.password-tab {
+    display: none; 
+}
+
+.password-tab.active { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+}
+
+.password-tab input, .tab-content input{
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid var(--primary-color);
+    margin-bottom: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.password-tab input:focus, .tab-content input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+.password-tab button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+/* tata letak tombol pada pop-up */
+.modal-actions { 
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px; 
+}
+
+/* Tombol pada pop-up */
+.modal-actions .btn-cancel,
+.modal-actions .btn-verify,
+.modal-actions .btn-save {
+    flex: 1; 
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.18s ease;
+}
+
+.btn-cancel {
+    background: rgba(158, 198, 243, 0.2);
+    color: var(--text-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-cancel:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-verify,
+.btn-save {
+    background: linear-gradient(135deg, var(--primary-color), #667eea);
+    color: white;
+}
+
+.btn-verify:hover,
+.btn-save:hover {
+    background: linear-gradient(135deg, #667eea, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-save[disabled],
+.btn-verify[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Confirm Modal Input Password */
+.confirm-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--primary-color);
+    font-size: 15px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.confirm-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
 
 /* Input Modal Styles */
 .input-modal {
@@ -381,16 +537,13 @@ nav {
     animation: modalAppear 0.3s ease;
 }
 
-
 .input-modal .modal-body {
     padding: 25px;
 }
 
-
 .input-modal .input-group {
     margin-bottom: 20px;
 }
-
 
 .input-modal label {
     display: block;
@@ -399,7 +552,6 @@ nav {
     color: var(--text-color);
     font-size: 14px;
 }
-
 
 .input-modal input {
     width: 100%;
@@ -410,12 +562,10 @@ nav {
     transition: all 0.3s ease;
 }
 
-
 .input-modal input:focus {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-
 
 .input-modal .modal-buttons {
     display: flex;
@@ -423,7 +573,6 @@ nav {
     justify-content: flex-end;
     margin-top: 25px;
 }
-
 
 .input-modal .modal-btn {
     padding: 10px 20px;
@@ -433,19 +582,16 @@ nav {
     transition: all 0.3s ease;
 }
 
-
 .input-modal .modal-btn.cancel {
     background: rgba(158, 198, 243, 0.2);
     color: var(--text-color);
     border: 2px solid var(--primary-color);
 }
 
-
 .input-modal .modal-btn.cancel:hover {
     background: var(--primary-color);
     color: white;
 }
-
 
 .input-modal .modal-btn.submit {
     background: linear-gradient(135deg, var(--primary-color), #667eea);
@@ -453,13 +599,11 @@ nav {
     border: 2px solid transparent;
 }
 
-
 .input-modal .modal-btn.submit:hover {
     background: linear-gradient(135deg, #667eea, var(--accent-color));
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
-
 
 /* Confirm Modal */
 .confirm-modal {
@@ -477,11 +621,9 @@ nav {
     animation: modalAppear 0.3s ease;
 }
 
-
 .confirm-modal .modal-body {
     text-align: center;
 }
-
 
 .confirm-modal p {
     margin-bottom: 25px;
@@ -489,13 +631,11 @@ nav {
     color: var(--text-color);
 }
 
-
 .confirm-buttons {
     display: flex;
     gap: 15px;
     justify-content: center;
 }
-
 
 .confirm-btn {
     padding: 12px 25px;
@@ -506,19 +646,16 @@ nav {
     flex: 1;
 }
 
-
 .confirm-no {
     background: rgba(158, 198, 243, 0.2);
     color: var(--text-color);
     border: 2px solid var(--primary-color);
 }
 
-
 .confirm-no:hover {
     background: var(--primary-color);
     color: white;
 }
-
 
 .confirm-yes {
     background: var(--danger-color);
@@ -526,19 +663,17 @@ nav {
     border: 2px solid var(--danger-color);
 }
 
-
 .confirm-yes:hover {
     background: #ff5252;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
-
-/* Responsive */
+/* Pengaturan layar kecil */
 @media (max-width: 768px) {
     .container {
-        padding: 30px 25px;
-        margin: 20px auto;
+        padding: 25px 20px;
+        margin: 15px auto;
     }
    
     .avatar img {
@@ -559,8 +694,16 @@ nav {
     .back-icon {
         font-size: 28px;
     }
-}
 
+    .modal {
+        max-width: 360px;
+    }
+
+    .tab {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+}
 
 @media (max-width: 480px) {
     .container {
@@ -588,5 +731,14 @@ nav {
     .input-modal .modal-btn {
         width: 100%;
     }
-}
 
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions .btn-cancel,
+    .modal-actions .btn-verify,
+    .modal-actions .btn-save {
+        width: 100%;
+    }
+}

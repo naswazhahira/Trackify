@@ -1,426 +1,436 @@
-// script.js - Profil
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Elements
+    const USERS_KEY = "trackify_users";              
+    const ACTIVE_USER_KEY = "activeUser";    
+
     const backButton = document.getElementById('backButton');
     const editButton = document.getElementById('editButton');
     const deleteButton = document.getElementById('deleteButton');
-    const editModal = document.getElementById('editModal');
-    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    const saveButton = document.getElementById('saveButton'); 
+    const cancelButton = document.getElementById('cancelButton'); 
     const overlay = document.getElementById('overlay');
-    const closeModal = document.getElementById('closeModal');
-    const changeUsernameBtn = document.getElementById('changeUsername');
-    const changePasswordBtn = document.getElementById('changePassword');
-    const forgotPasswordBtn = document.getElementById('forgotPassword');
-    const confirmYes = document.getElementById('confirmYes');
-    const confirmNo = document.getElementById('confirmNo');
-    const avatarIcon = document.querySelector('.avatar .icon');
 
+    const fullNameInput = document.getElementById('fullName'); 
+    const usernameInput = document.getElementById('username'); 
+    const profileImage = document.getElementById('profileImage'); 
+    const editAvatar = document.getElementById('editAvatar'); 
 
-    // Modal baru
-    const usernameModal = document.getElementById('usernameModal');
-    const passwordModal = document.getElementById('passwordModal');
-    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-   
-    // Tombol modal baru
-    const closeUsernameModal = document.getElementById('closeUsernameModal');
-    const closePasswordModal = document.getElementById('closePasswordModal');
-    const closeForgotPasswordModal = document.getElementById('closeForgotPasswordModal');
-    const cancelUsername = document.getElementById('cancelUsername');
-    const cancelPassword = document.getElementById('cancelPassword');
-    const cancelForgotPassword = document.getElementById('cancelForgotPassword');
-    const submitUsername = document.getElementById('submitUsername');
-    const submitPassword = document.getElementById('submitPassword');
-    const submitForgotPassword = document.getElementById('submitForgotPassword');
-   
-    // Input fields
-    const newUsernameInput = document.getElementById('newUsername');
-    const currentPasswordInput = document.getElementById('currentPassword');
-    const newPasswordInput = document.getElementById('newPassword');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    const emailForgotInput = document.getElementById('emailForgot');
+    const passwordButton = document.getElementById('passwordButton'); 
+    const passwordModal = document.getElementById('passwordModal'); 
 
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal'); 
+    const finalDeleteModal = document.getElementById('finalDeleteModal'); 
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const confirmYes = document.getElementById('confirmYes'); 
+    const confirmNo = document.getElementById('confirmNo'); 
+    const finalYes = document.getElementById('finalYes'); 
+    const finalNo = document.getElementById('finalNo'); 
 
-    console.log('🔍 Profile Elements Check:', {
-        backButton: !!backButton,
-        editButton: !!editButton,
-        deleteButton: !!deleteButton,
-        editModal: !!editModal,
-        confirmDeleteModal: !!confirmDeleteModal,
-        overlay: !!overlay,
-        closeModal: !!closeModal
-    });
+    const avatarModal = document.getElementById('avatarModal');
+    const closeAvatarModal = document.getElementById('closeAvatarModal');
+    const changeAvatar = document.getElementById('changeAvatar');
+    const removeAvatar = document.getElementById('removeAvatar');
 
+    const tabReset = document.getElementById('tabReset');
+    const tabForgot = document.getElementById('tabForgot');
+    const resetStage1 = document.getElementById('resetStage1');
+    const resetStage2 = document.getElementById('resetStage2');
+    const forgotPasswordTab = document.getElementById('forgotPasswordTab');
+    const forgotStage2 = document.getElementById('forgotStage2'); 
+    const verifyCurrentPassword = document.getElementById('verifyCurrentPassword');
+    const saveNewPassword = document.getElementById('saveNewPassword');
+    const verifyRecoveryPin = document.getElementById('verifyRecoveryPin');
+    const saveNewPasswordForgot = document.getElementById('saveNewPasswordForgot'); 
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPasswordInput');
+    const recoveryPinInput = document.getElementById('recoveryPinInput');
+    const newPasswordInputForgot = document.getElementById('newPasswordInputForgot');
+    const confirmNewPasswordInputForgot = document.getElementById('confirmNewPasswordInputForgot');
 
-    // Load user data from localStorage
+    const cancelResetStage1 = document.getElementById('cancelResetStage1');
+    const cancelResetStage2 = document.getElementById('cancelResetStage2');
+    const cancelLupaPassword = document.getElementById('cancelLupaPassword');
+    const cancelForgotStage2 = document.getElementById('cancelForgotStage2');
+
+    let currentUser = null;
+    let originalUsername = null; 
+
+    // Muat data user
     loadUserData();
 
+    //  Tombol Navigasi 
+    if (backButton) backButton.addEventListener('click', () => window.location.href = 'beranda.html');
 
-    // ==================== BACK BUTTON - DIKOREKSI ====================
-    if (backButton) {
-        backButton.addEventListener('click', () => {
-            console.log('🔙 Back button clicked - Redirecting to beranda.html');
-            // Redirect ke halaman beranda
-            window.location.href = 'beranda.html';
-        });
-       
-        // Juga tambahkan event listener untuk ikon panah jika ada
-        const backIcon = document.querySelector('.back-icon');
-        if (backIcon) {
-            backIcon.addEventListener('click', () => {
-                window.location.href = 'beranda.html';
-            });
-        }
-    } else {
-        console.error('❌ Back button not found');
-       
-        // Fallback: buat back button jika tidak ada
-        createBackButtonFallback();
-    }
-
-
-    // ==================== TOMBOL EDIT ====================
-    if (editButton) {
-        editButton.addEventListener('click', () => {
-            console.log('✏️ Edit button clicked');
-            openModal(editModal);
-        });
-    } else {
-        console.error('❌ Edit button not found');
-    }
-
-
-    // Delete Button - Open Confirm Modal
-    if (deleteButton) {
-        deleteButton.addEventListener('click', () => {
-            openModal(confirmDeleteModal);
-        });
-    }
-
-
-    // Close Modal
-    if (closeModal) {
-        closeModal.addEventListener('click', () => {
-            closeModals();
-        });
-    }
-
-
-    // Confirm No
-    if (confirmNo) {
-        confirmNo.addEventListener('click', () => {
-            closeModals();
-        });
-    }
-
-
-    // Confirm Yes - Delete Account
-    if (confirmYes) {
-        confirmYes.addEventListener('click', () => {
-            if (confirm('Apakah Anda benar-benar yakin? Tindakan ini akan menghapus semua data Anda secara permanen.')) {
-                deleteAccount();
-            }
-        });
-    }
-
-
-    // Overlay Click
-    if (overlay) {
-        overlay.addEventListener('click', () => {
-            closeModals();
-        });
-    }
-
-
-    // Change Username
-    if (changeUsernameBtn) {
-        changeUsernameBtn.addEventListener('click', () => {
-            closeModals();
-            const currentUsername = document.getElementById('usernameDisplay').textContent;
-            newUsernameInput.value = currentUsername;
-            if (emailForgotInput) {
-                emailForgotInput.value = document.getElementById('emailDisplay').textContent;
-            }
-            openModal(usernameModal);
-        });
-    }
-
-
-    // Change Password
-    if (changePasswordBtn) {
-        changePasswordBtn.addEventListener('click', () => {
-            closeModals();
-            // Reset form
-            if (currentPasswordInput) currentPasswordInput.value = '';
-            if (newPasswordInput) newPasswordInput.value = '';
-            if (confirmPasswordInput) confirmPasswordInput.value = '';
-            openModal(passwordModal);
-        });
-    }
-
-
-    // Forgot Password
-    if (forgotPasswordBtn) {
-        forgotPasswordBtn.addEventListener('click', () => {
-            closeModals();
-            if (emailForgotInput) {
-                emailForgotInput.value = document.getElementById('emailDisplay').textContent;
-            }
-            openModal(forgotPasswordModal);
-        });
-    }
-
-
-    // Avatar Change
-    if (avatarIcon) {
-        avatarIcon.addEventListener('click', () => {
-            showNotification('Fitur upload foto profil akan segera tersedia!', 'info');
-        });
-    }
-
-
-    // Close modal baru
-    if (closeUsernameModal) {
-        closeUsernameModal.addEventListener('click', () => closeModals());
-    }
-    if (closePasswordModal) {
-        closePasswordModal.addEventListener('click', () => closeModals());
-    }
-    if (closeForgotPasswordModal) {
-        closeForgotPasswordModal.addEventListener('click', () => closeModals());
-    }
-    if (cancelUsername) {
-        cancelUsername.addEventListener('click', () => closeModals());
-    }
-    if (cancelPassword) {
-        cancelPassword.addEventListener('click', () => closeModals());
-    }
-    if (cancelForgotPassword) {
-        cancelForgotPassword.addEventListener('click', () => closeModals());
-    }
-
-
-    // Submit Username
-    if (submitUsername) {
-        submitUsername.addEventListener('click', () => {
-            const newName = newUsernameInput.value.trim();
-            if (newName === "") {
-                showNotification("Username tidak boleh kosong!", 'error');
-                return;
-            }
-            changeUsername(newName);
-            closeModals();
-        });
-    }
-
-
-    // Submit Password
-    if (submitPassword) {
-        submitPassword.addEventListener('click', () => {
-            const currentPass = currentPasswordInput.value;
-            const newPass = newPasswordInput.value;
-            const confirmPass = confirmPasswordInput.value;
-
-
-            if (!currentPass) {
-                showNotification("Password saat ini harus diisi!", 'error');
-                return;
-            }
-
-
-            if (newPass.length < 6) {
-                showNotification("Password minimal 6 karakter!", 'error');
-                return;
-            }
-
-
-            if (newPass !== confirmPass) {
-                showNotification("Password baru tidak cocok!", 'error');
-                return;
-            }
-
-
-            showNotification("Password berhasil diganti!", 'success');
-            closeModals();
-        });
-    }
-
-
-    // Submit Forgot Password
-    if (submitForgotPassword) {
-        submitForgotPassword.addEventListener('click', () => {
-            const email = emailForgotInput.value;
-            showNotification(`Link reset password telah dikirim ke ${email}`, 'success');
-            closeModals();
-        });
-    }
-
-
-    // ==================== FUNGSI TAMBAHAN ====================
-    function createBackButtonFallback() {
-        // Buat tombol back otomatis jika tidak ada di HTML
-        const fallbackBackBtn = document.createElement('button');
-        fallbackBackBtn.id = 'fallbackBackButton';
-        fallbackBackBtn.innerHTML = '⬅ Kembali ke Beranda';
-        fallbackBackBtn.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 1000;
-            font-family: 'Poppins', sans-serif;
-        `;
-       
-        fallbackBackBtn.addEventListener('click', () => {
-            window.location.href = 'beranda.html';
-        });
-       
-        document.body.appendChild(fallbackBackBtn);
-        console.log('✅ Fallback back button created');
-    }
-
-
-    // ==================== KEYBOARD SHORTCUT ====================
-    document.addEventListener('keydown', function(e) {
-        // ESC key untuk tutup modal atau kembali
-        if (e.key === 'Escape') {
-            const anyModalOpen =
-                (editModal && editModal.style.display === 'block') ||
-                (confirmDeleteModal && confirmDeleteModal.style.display === 'block') ||
-                (usernameModal && usernameModal.style.display === 'block') ||
-                (passwordModal && passwordModal.style.display === 'block') ||
-                (forgotPasswordModal && forgotPasswordModal.style.display === 'block');
-           
-            if (anyModalOpen) {
-                closeModals();
-            } else {
-                // Jika tidak ada modal terbuka, ESC akan kembali ke beranda
-                window.location.href = 'beranda.html';
-            }
-        }
-       
-        // Alt + ArrowLeft untuk kembali
-        if (e.altKey && e.key === 'ArrowLeft') {
-            window.location.href = 'beranda.html';
-        }
+    //  Edit Profil 
+    if (editButton) editButton.addEventListener('click', () => {
+        fullNameInput.readOnly = false;
+        usernameInput.readOnly = false;
+        toggleActionButtons(false); 
+        showEditActions(true);
+        fullNameInput.focus();
     });
 
+    if (saveButton) saveButton.addEventListener('click', handleSaveProfile);
 
-    // Functions
-    function openModal(modal) {
-        if (!modal) {
-            console.error('❌ Modal not found:', modal);
-            return;
+    if (cancelButton) cancelButton.addEventListener('click', () => {
+        if (currentUser) {
+            fullNameInput.value = currentUser.fullname;
+            usernameInput.value = currentUser.username;
         }
+        fullNameInput.readOnly = true;
+        usernameInput.readOnly = true;
+        toggleActionButtons(true);
+        showEditActions(false);
+    });
+
+    //  Kelola Password 
+    if (passwordButton) {
+        passwordButton.addEventListener('click', () => {
+            openModal(passwordModal);
+            showPasswordTab('reset');
+            setTimeout(() => {
+                updateResetStage2Buttons();
+                updateForgotStage2Buttons();
+                updateResetStage1Buttons();
+                updateForgotStage1Buttons();
+            }, 0);
+        });
+    }
+
+    if (tabReset) tabReset.addEventListener('click', () => showPasswordTab('reset'));
+    if (tabForgot) tabForgot.addEventListener('click', () => showPasswordTab('forgot'));
+
+    function showPasswordTab(tab) {
+        resetStage1.style.display = 'none';
+        resetStage2.style.display = 'none';
+        forgotPasswordTab.style.display = 'none';
+        forgotStage2.style.display = 'none';
+        clearPasswordInputs();
+
+        tabReset.classList.toggle('active', tab === 'reset');
+        tabForgot.classList.toggle('active', tab === 'forgot');
+
+        if (tab === 'reset') resetStage1.style.display = 'block';
+        else if (tab === 'forgot') forgotPasswordTab.style.display = 'block';
+
+        updateResetStage2Buttons();
+        updateForgotStage2Buttons();
+        updateResetStage1Buttons();
+        updateForgotStage1Buttons();
+    }
+
+
+    // validasi tahap 1 reset password 
+    if (verifyCurrentPassword) {
+        verifyCurrentPassword.addEventListener('click', () => {
+            const pwdInput = document.getElementById('currentPasswordInput').value.trim();
+            if (!pwdInput) return showNotification("Silakan masukkan kata sandi akun!", "error");
+            if (!currentUser || typeof currentUser.password === 'undefined') return showNotification("Akun tidak ditemukan.", "error");
+            if (pwdInput !== currentUser.password) return showNotification("Password salah!", "error");
+
+            resetStage1.style.display = 'none';
+            resetStage2.style.display = 'block';
+            newPasswordInput.focus();
+            updateResetStage2Buttons();
+        });
+
+        const currentPwdInputEl = document.getElementById('currentPasswordInput');
+        if (currentPwdInputEl) {
+            currentPwdInputEl.addEventListener('input', updateResetStage1Buttons);
+        }
+    }
+
+    // simpan password baru hanya jika minimal 5 karakter 
+    if (saveNewPassword) {
+        saveNewPassword.addEventListener('click', () => {
+            const newPwd = newPasswordInput.value.trim();
+            const confirmPwd = confirmNewPasswordInput.value.trim();
+            if (!newPwd || !confirmPwd) return showNotification("Lengkapi semua kolom!", "error");
+            if (newPwd.length < 5) return showNotification("Password minimal 5 karakter!", "error"); // perubahan: enforce min length
+            if (newPwd !== confirmPwd) return showNotification("Password baru tidak cocok!", "error");
+
+            if (!currentUser) return showNotification("Akun tidak ditemukan.", "error");
+            currentUser.password = newPwd;
+            updateUserProfile();
+            showNotification("Password berhasil diubah!", "success");
+            closeModals();
+        });
+
+        newPasswordInput && newPasswordInput.addEventListener('input', updateResetStage2Buttons);
+        confirmNewPasswordInput && confirmNewPasswordInput.addEventListener('input', updateResetStage2Buttons);
+    }
+
+    if (verifyRecoveryPin) {
+        verifyRecoveryPin.addEventListener('click', () => {
+            const pinInput = recoveryPinInput.value.trim();
+            if (!pinInput) return showNotification("Silakan masukkan PIN pemulihan!", "error");
+            if (!currentUser) return showNotification("Akun tidak ditemukan.", "error");
+            if (typeof currentUser.pin === 'undefined' || currentUser.pin === null) {
+                return showNotification("PIN pemulihan tidak tersedia untuk akun ini.", "error");
+            }
+            if (pinInput !== String(currentUser.pin)) return showNotification("PIN pemulihan salah!", "error");
+
+            forgotPasswordTab.style.display = 'none';
+            forgotStage2.style.display = 'block';
+            newPasswordInputForgot.focus();
+            updateForgotStage2Buttons();
+        });
+
+        // disable lanjut jika pin field kosong
+        recoveryPinInput && recoveryPinInput.addEventListener('input', updateForgotStage1Buttons);
+    }
+
+    if (saveNewPasswordForgot) {
+        saveNewPasswordForgot.addEventListener('click', () => {
+            const newPwd = newPasswordInputForgot.value.trim();
+            const confirmPwd = confirmNewPasswordInputForgot.value.trim();
+            if (!newPwd || !confirmPwd) return showNotification("Lengkapi semua kolom!", "error");
+            if (newPwd.length < 5) return showNotification("Password minimal 5 karakter!", "error"); 
+            if (newPwd !== confirmPwd) return showNotification("Password baru tidak cocok!", "error");
+
+            if (!currentUser) return showNotification("Akun tidak ditemukan.", "error");
+            currentUser.password = newPwd;
+            updateUserProfile();
+            showNotification("Password berhasil diubah!", "success");
+            closeModals();
+        });
+
+        newPasswordInputForgot && newPasswordInputForgot.addEventListener('input', updateForgotStage2Buttons);
+        confirmNewPasswordInputForgot && confirmNewPasswordInputForgot.addEventListener('input', updateForgotStage2Buttons);
+    }
+
+    [cancelResetStage1, cancelResetStage2, cancelLupaPassword, cancelForgotStage2].forEach(btn => {
+        if (btn) btn.addEventListener('click', () => closeModals());
+    });
+
+    //  Hapus Akun 
+    if (deleteButton) deleteButton.addEventListener('click', () => openModal(confirmDeleteModal));
+
+    if (confirmNo) confirmNo.addEventListener('click', () => closeModals());
+    if (confirmYes) confirmYes.addEventListener('click', () => {
+        const pwd = confirmPasswordInput.value.trim();
+        if (!pwd) return showNotification("Silakan masukkan kata sandi akun!", "error");
+        if (!currentUser || pwd !== currentUser.password) return showNotification("Password salah, akun tidak dihapus", "error");
+
+        closeModal(confirmDeleteModal);   
+        openModal(finalDeleteModal);      
+        confirmPasswordInput.value = '';
+    });
+
+    if (finalNo) finalNo.addEventListener('click', () => closeModals());
+    if (finalYes) finalYes.addEventListener('click', deleteAccount);
+
+    //  Edit Foto Profil 
+    if (editAvatar) editAvatar.addEventListener('click', () => openModal(avatarModal));
+    if (closeAvatarModal) closeAvatarModal.addEventListener('click', closeModals);
+
+    if (changeAvatar) changeAvatar.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function() {
+                profileImage.src = reader.result;
+                if (!currentUser) currentUser = {};
+                currentUser.profilePic = reader.result;
+                updateUserProfile();
+                closeModals();
+                showNotification("Foto profil berhasil diubah!", "success");
+            };
+            reader.readAsDataURL(file);
+        });
+        fileInput.click();
+    });
+
+    if (removeAvatar) removeAvatar.addEventListener('click', () => {
+        profileImage.src = "assets/images/ikon_profil.avif";
+        if (!currentUser) currentUser = {};
+        currentUser.profilePic = null;
+        updateUserProfile();
+        closeModals();
+        showNotification("Foto profil dihapus!", "info");
+    });
+
+    function loadUserData() {
+        const users = loadUsers();
+        const activeUsername = localStorage.getItem(ACTIVE_USER_KEY);
+
+        if (!users.length || !activeUsername) {
+            currentUser = { fullname: 'User', username: 'user', password: '', profilePic: null, pin: null }; 
+            originalUsername = currentUser.username; 
+        } else {
+            currentUser = users.find(u => u.username === activeUsername);
+            originalUsername = activeUsername; 
+        }
+
+        if (currentUser) {
+            fullNameInput.value = currentUser.fullname || '';
+            usernameInput.value = currentUser.username || '';
+            if (currentUser.profilePic) profileImage.src = currentUser.profilePic;
+        }
+    }
+
+    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    function loadUsers() { const raw = localStorage.getItem(USERS_KEY); return raw ? JSON.parse(raw) : []; }
+
+    function updateUserProfile() {
+        const users = loadUsers();
+        const idx = users.findIndex(u => u.username === originalUsername);
+        if (idx !== -1) {
+            users[idx] = { ...currentUser };
+            saveUsers(users);
+            localStorage.setItem(ACTIVE_USER_KEY, currentUser.username);
+            originalUsername = currentUser.username;
+        } else {
+            const idx2 = users.findIndex(u => u.username === currentUser.username);
+            if (idx2 !== -1) {
+                users[idx2] = { ...currentUser };
+                saveUsers(users);
+                localStorage.setItem(ACTIVE_USER_KEY, currentUser.username);
+                originalUsername = currentUser.username;
+            } else {
+                users.push({ ...currentUser });
+                saveUsers(users);
+                localStorage.setItem(ACTIVE_USER_KEY, currentUser.username);
+                originalUsername = currentUser.username;
+                console.warn("updateUserProfile: user tidak ditemukan, menambahkan sebagai user baru.");
+            }
+        }
+    }
+
+    function handleSaveProfile() {
+        if (!currentUser) currentUser = {};
+        const newFull = fullNameInput.value.trim();
+        const newUser = usernameInput.value.trim();
+
+        if (!newFull) return showNotification("Nama lengkap tidak boleh kosong!", "error");
+        if (!newUser) return showNotification("Nama pengguna tidak boleh kosong!", "error");
+
+        const users = loadUsers();
+        const taken = users.some(u => u.username === newUser && u.username !== originalUsername);
+        if (taken) return showNotification("Nama pengguna sudah digunakan oleh akun lain!", "error");
+
+        currentUser.fullname = newFull;
+        currentUser.username = newUser;
+        updateUserProfile();
+
+        fullNameInput.readOnly = true;
+        usernameInput.readOnly = true;
+        toggleActionButtons(true);
+        showEditActions(false);
+        showNotification("Profil berhasil diperbarui", "success");
+    }
+
+    function deleteAccount() {
+        let users = loadUsers();
+        users = users.filter(u => u.username !== currentUser.username);
+        saveUsers(users);
+        localStorage.removeItem(ACTIVE_USER_KEY);
+        showNotification("Akun berhasil dihapus", "error");
+        setTimeout(() => window.location.href = 'index.html', 1500);
+    }
+
+    function openModal(modal) {
+        if (!modal) return;
         modal.style.display = 'block';
         if (overlay) overlay.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        console.log('✅ Modal opened:', modal.id);
     }
 
-
-    function closeModals() {
-        const modals = [
-            editModal,
-            confirmDeleteModal,
-            usernameModal,
-            passwordModal,
-            forgotPasswordModal
-        ];
-       
-        modals.forEach(modal => {
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        });
-       
+    function closeModal(modal) {
+        if (!modal) return;
+        modal.style.display = 'none';
         if (overlay) overlay.style.display = 'none';
         document.body.style.overflow = 'auto';
-        console.log('✅ All modals closed');
     }
 
-
-    function changeUsername(newName) {
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        if (usernameDisplay) {
-            usernameDisplay.textContent = newName;
-        }
-        saveUserData();
-       
-        // Show success notification
-        showNotification(`Username berhasil diubah menjadi: ${newName}`, 'success');
+    function closeModals() {
+        [passwordModal, avatarModal, confirmDeleteModal, finalDeleteModal].forEach(m => closeModal(m));
+        resetStage1 && (resetStage1.style.display = 'block');
+        resetStage2 && (resetStage2.style.display = 'none');
+        forgotPasswordTab && (forgotPasswordTab.style.display = 'none');
+        forgotStage2 && (forgotStage2.style.display = 'none');
+        clearPasswordInputs();
     }
 
-
-    function deleteAccount() {
-        // Simulasi penghapusan akun
-        localStorage.removeItem('userProfile');
-        localStorage.removeItem('currentUser'); // Juga hapus current user
-       
-        showNotification('Akun berhasil dihapus', 'error');
-       
-        setTimeout(() => {
-            alert('Akun Anda telah dihapus. Anda akan dialihkan ke halaman utama.');
-            window.location.href = 'regis.html'; // Redirect ke halaman login
-        }, 2000);
+    function clearPasswordInputs() {
+        const currentPwdEl = document.getElementById('currentPasswordInput');
+        if (currentPwdEl) currentPwdEl.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        if (confirmNewPasswordInput) confirmNewPasswordInput.value = '';
+        if (recoveryPinInput) recoveryPinInput.value = '';
+        if (newPasswordInputForgot) newPasswordInputForgot.value = '';
+        if (confirmNewPasswordInputForgot) confirmNewPasswordInputForgot.value = '';
+        updateResetStage2Buttons();
+        updateForgotStage2Buttons();
+        updateResetStage1Buttons();
+        updateForgotStage1Buttons();
     }
 
-
-    function saveUserData() {
-        const emailDisplay = document.getElementById('emailDisplay');
-        const usernameDisplay = document.getElementById('usernameDisplay');
-       
-        if (emailDisplay && usernameDisplay) {
-            const userData = {
-                email: emailDisplay.textContent,
-                username: usernameDisplay.textContent
-            };
-            localStorage.setItem('userProfile', JSON.stringify(userData));
-            console.log('💾 User data saved:', userData);
-        }
+    function showEditActions(show) {
+        const editActions = document.querySelector('.edit-actions');
+        if (editActions) editActions.style.display = show ? 'flex' : 'none';
     }
 
+    function toggleActionButtons(show) {
+        const actionButtons = document.querySelector('.action-buttons');
+        if (actionButtons) actionButtons.style.display = show ? 'flex' : 'none';
+    }
 
-    function loadUserData() {
-        // Coba load dari currentUser dulu (dari login)
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        const savedData = localStorage.getItem('userProfile');
-       
-        const emailDisplay = document.getElementById('emailDisplay');
-        const usernameDisplay = document.getElementById('usernameDisplay');
-       
-        if (!emailDisplay || !usernameDisplay) {
-            console.error('❌ Display elements not found');
+    function updateResetStage1Buttons() {
+        const currentPwdEl = document.getElementById('currentPasswordInput');
+        if (!verifyCurrentPassword) return;
+        if (!currentPwdEl) {
+            verifyCurrentPassword.disabled = true;
             return;
         }
-
-
-        if (currentUser) {
-            // Gunakan data dari login
-            emailDisplay.textContent = currentUser.email || `${currentUser.username}@gmail.com`;
-            usernameDisplay.textContent = currentUser.username || 'user';
-            console.log('✅ Loaded from currentUser:', currentUser);
-        } else if (savedData) {
-            // Gunakan data yang disimpan
-            const userData = JSON.parse(savedData);
-            emailDisplay.textContent = userData.email || 'user@gmail.com';
-            usernameDisplay.textContent = userData.username || 'user';
-            console.log('✅ Loaded from userProfile:', userData);
-        } else {
-            // Data default
-            emailDisplay.textContent = 'user@gmail.com';
-            usernameDisplay.textContent = 'user';
-            console.log('✅ Using default data');
-        }
+        verifyCurrentPassword.disabled = currentPwdEl.value.trim().length === 0;
     }
 
+    function updateResetStage2Buttons() {
+        if (!saveNewPassword) return;
+        const newPwd = newPasswordInput ? newPasswordInput.value.trim() : '';
+        const confirmPwd = confirmNewPasswordInput ? confirmNewPasswordInput.value.trim() : '';
+        const enabled = newPwd.length >= 5 && confirmPwd.length >= 5 && newPwd === confirmPwd;
+        saveNewPassword.disabled = !enabled;
+    }
+
+    function updateForgotStage1Buttons() {
+        if (!verifyRecoveryPin) return;
+        const pinVal = recoveryPinInput ? recoveryPinInput.value.trim() : '';
+        verifyRecoveryPin.disabled = pinVal.length === 0;
+    }
+
+    function updateForgotStage2Buttons() {
+        if (!saveNewPasswordForgot) return;
+        const newPwd = newPasswordInputForgot ? newPasswordInputForgot.value.trim() : '';
+        const confirmPwd = confirmNewPasswordInputForgot ? confirmNewPasswordInputForgot.value.trim() : '';
+        const enabled = newPwd.length >= 5 && confirmPwd.length >= 5 && newPwd === confirmPwd;
+        saveNewPasswordForgot.disabled = !enabled;
+    }
+
+    (function attachRealtimeValidators() {
+        const currentPwdEl = document.getElementById('currentPasswordInput');
+        if (currentPwdEl && verifyCurrentPassword) currentPwdEl.addEventListener('input', updateResetStage1Buttons);
+
+        if (newPasswordInput) newPasswordInput.addEventListener('input', updateResetStage2Buttons);
+        if (confirmNewPasswordInput) confirmNewPasswordInput.addEventListener('input', updateResetStage2Buttons);
+
+        if (recoveryPinInput) recoveryPinInput.addEventListener('input', updateForgotStage1Buttons);
+
+        if (newPasswordInputForgot) newPasswordInputForgot.addEventListener('input', updateForgotStage2Buttons);
+        if (confirmNewPasswordInputForgot) confirmNewPasswordInputForgot.addEventListener('input', updateForgotStage2Buttons);
+
+        if (fullNameInput) fullNameInput.addEventListener('input', () => {
+        });
+        if (usernameInput) usernameInput.addEventListener('input', () => {
+        });
+    })();
 
     function showNotification(message, type = 'info') {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
@@ -429,9 +439,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span>${message}</span>
             </div>
         `;
-
-
-        // Add styles
         notification.style.cssText = `
             position: fixed;
             top: 100px;
@@ -446,76 +453,19 @@ document.addEventListener('DOMContentLoaded', function() {
             max-width: 300px;
             font-family: 'Poppins', sans-serif;
         `;
-
-
         document.body.appendChild(notification);
-
-
-        // Remove after 3 seconds
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
+            setTimeout(() => { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 300);
         }, 3000);
     }
 
-
-    // Add CSS for notifications
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        .notification-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .notification-content i {
-            font-size: 20px;
-        }
-    `;
-    document.head.appendChild(style);
-
-
-    // Debug: Check if all required elements exist
-    console.log('🔍 Final Check - Required Elements:', {
-        backButton: !!backButton,
-        editButton: !!editButton,
-        editModal: !!editModal,
-        overlay: !!overlay
+    // ==================== Keyboard Shortcut ====================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModals();
+        if (e.altKey && e.key === 'ArrowLeft') window.location.href = 'beranda.html';
     });
+
+    // ==================== Global Error Handler ====================
+    window.addEventListener('error', function(e) { console.error('❌ Global Error:', e.error); });
 });
-
-
-// Handle browser back button
-window.addEventListener('popstate', function() {
-    const modals = document.querySelectorAll('.modal, .confirm-modal, .input-modal');
-    const overlay = document.getElementById('overlay');
-   
-    modals.forEach(modal => {
-        if (modal.style.display === 'block') {
-            modal.style.display = 'none';
-        }
-    });
-   
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-    document.body.style.overflow = 'auto';
-});
-
-
-// Error handling global
-window.addEventListener('error', function(e) {
-    console.error('❌ Global Error:', e.error);
-});
-
