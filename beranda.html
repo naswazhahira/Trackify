@@ -3,13 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trackify - Jadwal & To-Do List</title>
-  <link rel="stylesheet" href="assets/css/agenda.css">
+  <title>TRACKIFY</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/beranda.css">
 </head>
-<body>
 
+
+<body>
+  <!-- Input checkbox untuk toggle sidebar (tetap tersembunyi) -->
+  <input type="checkbox" id="check">
+ 
   <!-- Navbar dengan hamburger icon-->
   <nav class="navbar-main">
     <div class="nav-wrapper">
@@ -17,10 +22,17 @@
         <a href="#" class="hamburger-icon" id="hamburgerBtn">
           <i class='bx bx-menu'></i>
         </a>
-        <span class="nav-title">Agenda</span>
+        <span class="nav-title">Trackify</span>
+
+
+        <!-- Icon Profile Sederhana -->
+        <a href="profile.html" class="profile-icon">
+          <i class='bx bx-user-circle'></i>
+        </a>
       </div>
     </div>
   </nav>
+
 
   <!-- Sidebar -->
   <nav class="sidebar" id="sidebar">
@@ -38,309 +50,215 @@
     </ul>
   </nav>
 
+
   <!-- Overlay untuk menutup sidebar -->
   <div id="overlay" class="sidebar-overlay"></div>
 
-  <!-- Loading Screen -->
-  <div id="loading" class="loading-overlay">
-    <div class="loading-spinner"></div>
-    <p>Memuat Trackify...</p>
-  </div>
 
-  <!-- Main -->
-  <div class="container">
-    <!-- Reminder Notification -->
-    <div class="reminder-notification" id="reminderNotification">
-      <div class="reminder-icon"></div>
-      <div class="reminder-content">
-        <div class="reminder-title" id="reminderTitle">Pengingat Tugas</div>
-        <div class="reminder-message" id="reminderMessage">Ada tugas yang deadline-nya dekat!</div>
-      </div>
-      <button class="reminder-close" id="reminderClose" aria-label="Tutup pengingat">
-        <i class='bx bx-x'></i>
-      </button>
-      <div class="reminder-badge" id="reminderBadge">0</div>
+  <!-- Main content -->
+  <main class="home-section">
+    <div class="welcome-banner">
+      <h2>Halo Mahasiswa Hebat!</h2>
+      <p>Atur dan pantau seluruh aktivitas kuliahmu dengan lebih mudah bersama <span class="highlight">Trackify</span></p>
     </div>
 
-    <div class="schedule-wrapper">
-      <!-- Kalender -->
-      <div class="card calendar-card">
+
+    <div class="dashboard-grid">
+      <!-- Calendar Card -->
+      <div class="dashboard-card calendar-card">
         <div class="card-header">
-          <h2>Kalender</h2>
-          <div class="calendar-nav">
-            <button id="prev" class="nav-btn" aria-label="Bulan sebelumnya">
-              <i class='bx bx-chevron-left'></i>
-            </button>
-            <h3 id="monthYear">Bulan Tahun</h3>
-            <button id="next" class="nav-btn" aria-label="Bulan berikutnya">
-              <i class='bx bx-chevron-right'></i>
-            </button>
+          <h3><i class="fas fa-calendar"></i> Kalender</h3>
+          <a href="agenda.html" class="view-all">Lihat Semua</a>
+        </div>
+        <div class="calendar-mini">
+          <div class="calendar-header">
+            <button class="nav-btn"><i class="fas fa-chevron-left"></i></button>
+            <span class="month-year">Maret 2024</span>
+            <button class="nav-btn"><i class="fas fa-chevron-right"></i></button>
           </div>
-        </div>
-
-        <div class="weekdays">
-          <div class="weekday">Min</div>
-          <div class="weekday">Sen</div>
-          <div class="weekday">Sel</div>
-          <div class="weekday">Rab</div>
-          <div class="weekday">Kam</div>
-          <div class="weekday">Jum</div>
-          <div class="weekday">Sab</div>
-        </div>
-
-        <div id="calendarGrid" class="calendar-grid">
-          <!-- Kalender akan diisi oleh JavaScript -->
-        </div>
-
-        <div class="quick-add-section">
-          <h4>Tambah Agenda Cepat</h4>
-          <div class="quick-add-form">
-            <input id="eventName" type="text" placeholder="Nama Agenda (misal: Tugas PemWeb)" 
-                   aria-label="Nama agenda cepat">
-            <input id="eventDate" type="date" aria-label="Tanggal agenda">
-            <button id="addEventBtn" class="primary-btn" aria-label="Tambah sebagai tugas">
-              <i class='bx bx-plus'></i>
-              Tambah sebagai tugas
-            </button>
+          <div class="calendar-weekdays">
+            <div>Min</div>
+            <div>Sen</div>
+            <div>Sel</div>
+            <div>Rab</div>
+            <div>Kam</div>
+            <div>Jum</div>
+            <div>Sab</div>
           </div>
-          <p class="helper-text">Klik tanggal di kalender untuk melihat tugas</p>
+          <div class="calendar-days">
+            <!-- Days will be populated by JavaScript -->
+          </div>
         </div>
       </div>
 
-      <!-- To-Do List Section -->
-      <div class="card todo-card">
+
+      <!-- To-Do List Card -->
+      <div class="dashboard-card todo-card">
         <div class="card-header">
-          <div class="todo-header">
-            <div>
-              <h2>Daftar Agenda</h2>
-              <p id="dateLabel" class="date-label">Semua Tugas</p>
+          <h3><i class="fas fa-tasks"></i> To-Do List</h3>
+          <a href="agenda.html" class="view-all">Lihat Semua</a>
+        </div>
+        <div class="todo-list">
+          <div class="todo-item">
+            <input type="checkbox" id="todo1">
+            <label for="todo1">Lab Pemrograman Web</label>
+            <span class="todo-time">Hari ini</span>
+          </div>
+          <div class="todo-item">
+            <input type="checkbox" id="todo2">
+            <label for="todo2">Basis Data</label>
+            <span class="todo-time">Besok</span>
+          </div>
+          <div class="todo-item">
+            <input type="checkbox" id="todo3">
+            <label for="todo3">UTS Struktur Data</label>
+            <span class="todo-time">2 hari</span>
+          </div>
+          <div class="no-tasks" style="display: none;">
+            <p>Tidak ada tugas hari ini</p>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Schedule Card -->
+      <div class="dashboard-card schedule-card">
+        <div class="card-header">
+          <h3><i class="fas fa-clock"></i> Jadwal</h3>
+          <a href="agenda.html" class="view-all">Lihat Semua</a>
+        </div>
+        <div class="schedule-list">
+          <div class="schedule-item">
+            <div class="schedule-time">
+              <span class="time">10:30</span>
+              <span class="duration">2 jam 30 menit</span>
             </div>
-            <button id="viewAllTasksBtn" class="secondary-btn" aria-label="Lihat semua tugas">
-              <i class='bx bx-list-ul'></i>
-              Lihat Semua Tugas
-            </button>
+            <div class="schedule-info">
+              <h4>Basis Data</h4>
+              <p>D-106</p>
+            </div>
           </div>
-        </div>
-
-        <!-- Progress Section -->
-        <div class="progress-section">
-          <div class="progress-bar">
-            <div id="progressFill" class="progress-fill"></div>
+          <div class="schedule-item">
+            <div class="schedule-time">
+              <span class="time">13:50</span>
+              <span class="duration">1 jam 40 menit</span>
+            </div>
+            <div class="schedule-info">
+              <h4>Wirausaha Digital</h4>
+              <p>D-101</p>
+            </div>
           </div>
-          <div class="progress-info">
-            <span id="progressText" class="progress-text">0/0 tugas selesai</span>
-            <span id="percentText" class="progress-percent">0%</span>
+          <div class="no-schedule" style="display: none;">
+            <p>Tidak ada jadwal</p>
           </div>
-        </div>
-
-        <!-- Search Section -->
-        <div class="search-section">
-          <div class="search-box">
-            <i class='bx bx-search'></i>
-            <input type="text" id="taskSearch" placeholder="Cari tugas..." 
-                   aria-label="Cari tugas">
-          </div>
-        </div>
-
-        <!-- Task Form -->
-        <form id="addForm" class="add-form">
-          <div class="form-row">
-            <input id="taskInput" type="text" 
-                   placeholder="Tulis tugas (misal: Kerjakan PR Matematika)" 
-                   required aria-label="Input tugas baru">
-            <input id="dueDate" type="date" required aria-label="Tanggal jatuh tempo">
-          </div>
-          <div class="form-row">
-            <select id="priority" aria-label="Prioritas tugas">
-              <option value="low">Rendah</option>
-              <option value="normal" selected>Normal</option>
-              <option value="high">Tinggi</option>
-            </select>
-            <select id="category" aria-label="Kategori tugas">
-              <option value="kuliah">Kuliah</option>
-              <option value="praktikum">Praktikum</option>
-              <option value="uts">UTS</option>
-              <option value="uas">UAS</option>
-              <option value="organisasi">Organisasi</option>
-              <option value="lainnya">Lainnya</option>
-            </select>
-            <button type="submit" class="primary-btn" aria-label="Tambah tugas">
-              <i class='bx bx-plus'></i>
-              Tambah
-            </button>
-          </div>
-        </form>
-
-        <!-- Filter Section -->
-        <div class="filter-section">
-          <div class="filter-group">
-            <label>Filter:</label>
-            <input id="filterDate" type="date" placeholder="Tanggal" aria-label="Filter berdasarkan tanggal">
-            <select id="filterPriority" aria-label="Filter berdasarkan prioritas">
-              <option value="">Semua Prioritas</option>
-              <option value="low">Rendah</option>
-              <option value="normal">Normal</option>
-              <option value="high">Tinggi</option>
-            </select>
-            <button id="clearFilters" class="outline-btn" aria-label="Reset filter">
-              <i class='bx bx-reset'></i>
-              Reset
-            </button>
-          </div>
-        </div>
-
-        <!-- Todo List -->
-        <div id="todoList" class="todo-list">
-          <!-- Daftar tugas akan diisi oleh JavaScript -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Reward Popup -->
-  <div id="rewardPopup" class="reward-popup">
-    <div class="reward-content">
-      <div class="reward-icon">🎉</div>
-      <h3>Yeay! Tugas selesai!</h3>
-      <p>Kamu hebat hari ini! Istirahat sebentar atau beri reward kecil untuk dirimu :)</p>
-      <button id="closeReward" class="primary-btn" aria-label="Tutup popup reward">Tutup</button>
-    </div>
-  </div>
-
-  <!-- All Tasks Popup -->
-  <div class="modal-overlay" id="tasksPopupOverlay"></div>
-  <div id="tasksPopup" class="tasks-popup">
-    <div class="modal-header">
-      <h2>Daftar Semua Tugas</h2>
-      <button class="modal-close" id="tasksPopupClose" aria-label="Tutup popup tugas">
-        <i class='bx bx-x'></i>
-      </button>
-    </div>
-    <div class="modal-content">
-      <div class="tasks-stats">
-        <div class="stat-item">
-          <div class="stat-number" id="totalTasks">0</div>
-          <div class="stat-label">Total Tugas</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number" id="completedTasks">0</div>
-          <div class="stat-label">Tugas Selesai</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number" id="pendingTasks">0</div>
-          <div class="stat-label">Tugas Tertunda</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number" id="overdueTasks">0</div>
-          <div class="stat-label">Tugas Terlambat</div>
         </div>
       </div>
 
-      <div class="tasks-filters">
-        <select id="tasksFilterMonth" aria-label="Filter berdasarkan bulan">
-          <option value="">Semua Bulan</option>
-          <option value="0">Januari</option>
-          <option value="1">Februari</option>
-          <option value="2">Maret</option>
-          <option value="3">April</option>
-          <option value="4">Mei</option>
-          <option value="5">Juni</option>
-          <option value="6">Juli</option>
-          <option value="7">Agustus</option>
-          <option value="8">September</option>
-          <option value="9">Oktober</option>
-          <option value="10">November</option>
-          <option value="11">Desember</option>
-        </select>
-        <select id="tasksFilterStatus" aria-label="Filter berdasarkan status">
-          <option value="">Semua Status</option>
-          <option value="completed">Selesai</option>
-          <option value="pending">Belum Selesai</option>
-        </select>
-        <select id="tasksFilterPriority" aria-label="Filter berdasarkan prioritas">
-          <option value="">Semua Prioritas</option>
-          <option value="high">Tinggi</option>
-          <option value="normal">Normal</option>
-          <option value="low">Rendah</option>
-        </select>
-        <select id="tasksFilterCategory" aria-label="Filter berdasarkan kategori">
-          <option value="">Semua Kategori</option>
-          <option value="kuliah">Kuliah</option>
-          <option value="praktikum">Praktikum</option>
-          <option value="uts">UTS</option>
-          <option value="uas">UAS</option>
-          <option value="organisasi">Organisasi</option>
-          <option value="lainnya">Lainnya</option>
-        </select>
+
+      <!-- Progress Card - DIKOREKSI -->
+      <div class="dashboard-card progress-card">
+          <div class="card-header">
+              <h3><i class="fas fa-chart-line"></i> Progress Mingguan</h3>
+              <a href="fokus.html" class="view-all">Lihat Detail</a>
+          </div>
+          <div class="progress-content">
+              <div class="progress-chart">
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 60%;"></div>
+                      </div>
+                      <span class="bar-label">Sen</span>
+                      <span class="bar-value">3 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 80%;"></div>
+                      </div>
+                      <span class="bar-label">Sel</span>
+                      <span class="bar-value">4 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 40%;"></div>
+                      </div>
+                      <span class="bar-label">Rab</span>
+                      <span class="bar-value">2 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 90%;"></div>
+                      </div>
+                      <span class="bar-label">Kam</span>
+                      <span class="bar-value">5 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 70%;"></div>
+                      </div>
+                      <span class="bar-label">Jum</span>
+                      <span class="bar-value">4 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 50%;"></div>
+                      </div>
+                      <span class="bar-label">Sab</span>
+                      <span class="bar-value">3 jam</span>
+                  </div>
+                  <div class="chart-bar">
+                      <div class="bar-container">
+                          <div class="bar-fill" style="height: 85%;"></div>
+                      </div>
+                      <span class="bar-label">Min</span>
+                      <span class="bar-value">5 jam</span>
+                  </div>
+              </div>
+              <div class="progress-stats">
+                  <div class="stat-item">
+                      <span class="stat-value">12</span>
+                      <span class="stat-label">Tugas Selesai</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-value">3</span>
+                      <span class="stat-label">Dalam Proses</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-value">85%</span>
+                      <span class="stat-label">Progress</span>
+                  </div>
+              </div>
+          </div>
       </div>
 
-      <div id="tasksPopupList" class="tasks-list">
-        <!-- Daftar tugas akan diisi oleh JavaScript -->
+
+      <!-- Quick Actions Card -->
+      <div class="dashboard-card actions-card">
+        <div class="card-header">
+          <h3><i class="fas fa-bolt"></i> Akses Cepat</h3>
+        </div>
+        <div class="quick-actions">
+          <a href="fokus.html" class="action-btn">
+            <i class="fas fa-clock"></i>
+            <span>Mode Fokus</span>
+          </a>
+          <a href="repositori.html" class="action-btn">
+            <i class="fas fa-folder"></i>
+            <span>Repositori</span>
+          </a>
+          <a href="agenda.html" class="action-btn">
+            <i class="fas fa-calendar-plus"></i>
+            <span>Tambah Jadwal</span>
+          </a>
+          <a href="agenda.html" class="action-btn">
+            <i class="fas fa-plus"></i>
+            <span>Tambah Tugas</span>
+          </a>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- Edit Task Modal -->
-  <div class="modal-overlay" id="editModalOverlay"></div>
-  <div id="editModal" class="edit-modal">
-    <div class="modal-header">
-      <h2>Edit Tugas</h2>
-      <button class="modal-close" id="editModalClose" aria-label="Tutup modal edit">
-        <i class='bx bx-x'></i>
-      </button>
-    </div>
-    <div class="modal-content">
-      <form id="editForm" class="edit-form">
-        <input type="hidden" id="editTaskId">
-        
-        <div class="form-group">
-          <label for="editTaskText">Nama Tugas *</label>
-          <input type="text" id="editTaskText" placeholder="Masukkan nama tugas" required
-                 aria-label="Nama tugas yang diedit">
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="editDueDate">Tanggal Jatuh Tempo *</label>
-            <input type="date" id="editDueDate" required aria-label="Tanggal jatuh tempo yang diedit">
-          </div>
-          
-          <div class="form-group">
-            <label for="editPriority">Prioritas</label>
-            <select id="editPriority" aria-label="Prioritas yang diedit">
-              <option value="low">Rendah</option>
-              <option value="normal">Normal</option>
-              <option value="high">Tinggi</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="editCategory">Kategori</label>
-          <select id="editCategory" aria-label="Kategori yang diedit">
-            <option value="kuliah">Kuliah</option>
-            <option value="praktikum">Praktikum</option>
-            <option value="uts">UTS</option>
-            <option value="uas">UAS</option>
-            <option value="organisasi">Organisasi</option>
-            <option value="lainnya">Lainnya</option>
-          </select>
-        </div>
-        
-        <div class="form-actions">
-          <button type="button" id="editCancel" class="secondary-btn" aria-label="Batal edit">
-            <i class='bx bx-x'></i>
-            Batal
-          </button>
-          <button type="submit" class="primary-btn" aria-label="Simpan perubahan">
-            <i class='bx bx-save'></i>
-            Simpan Perubahan
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
-  <script src="assets/js/agenda.js"></script>
+  <script src="assets/js/beranda.js"></script>
 </body>
 </html>
