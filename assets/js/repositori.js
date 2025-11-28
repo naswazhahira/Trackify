@@ -1,23 +1,135 @@
+const hamburgerIcon = document.getElementById('hamburgerIcon');
+const closeSidebar = document.getElementById('closeSidebar');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+console.log('🔍 Sidebar Elements:', {
+    hamburgerIcon: !!hamburgerIcon,
+    closeSidebar: !!closeSidebar,
+    sidebar: !!sidebar,
+    sidebarOverlay: !!sidebarOverlay
+});
+
+// Buka sidebar
+if (hamburgerIcon) {
+    hamburgerIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('🍔 Hamburger icon diklik');
+        sidebar.classList.add('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.add('active');
+        }
+        document.body.style.overflow = 'hidden';
+    });
+} else {
+    console.error('❌ Hamburger icon tidak ditemukan');
+}
+
+// Tutup sidebar
+if (closeSidebar) {
+    closeSidebar.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('❌ Close sidebar diklik');
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    });
+}
+
+// Tutup sidebar ketika overlay diklik
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', function() {
+        console.log('🎯 Overlay sidebar diklik');
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+// Tutup sidebar ketika ESC ditekan
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && sidebar.classList.contains('active')) {
+        console.log('ESC ditekan - tutup sidebar');
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    }
+});
+
 console.log("repository-final.js loaded");
 const demoFileUrl = "/mnt/data/ad2af446-efbf-4ff0-91c8-df4e3d487831.jpg";
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-
 (function createUIHelpers() {
-    // Confirm modal
+   // Confirm modal
     const confirmModal = document.createElement('div');
     confirmModal.id = 'confirmModal';
     confirmModal.className = 'modal';
     confirmModal.innerHTML = `
-      <div class="modal-content" style="width:360px;max-width:92%">
-        <h3 id="confirmModalText"></h3>
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
-          <button id="confirmCancelBtn" style="background:#ddd;padding:8px 12px;border-radius:8px;">Batal</button>
-          <button id="confirmOkBtn" style="background:#ff6b6b;color:#fff;padding:8px 12px;border-radius:8px;">Hapus</button>
+    <div class="modal-content" style="width:360px;max-width:92%">
+        <h3 id="confirmModalText" style="text-align:center;margin-bottom:20px;font-size:18px;color:#333;"></h3>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+        <button id="confirmCancelBtn" style="
+            background:#ddd;
+            color:#333;
+            padding:10px 24px;
+            border-radius:8px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            font-size:14px;
+            transition:all 0.3s ease;
+            min-width:80px;
+        ">Batal</button>
+        <button id="confirmOkBtn" style="
+            background:#ff6b6b;
+            color:#fff;
+            padding:10px 24px;
+            border-radius:8px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            font-size:14px;
+            transition:all 0.3s ease;
+            min-width:80px;
+        ">Hapus</button>
         </div>
-      </div>
+    </div>
     `;
+
+    // Tambahkan event listeners untuk hover effects
+    document.addEventListener('DOMContentLoaded', function() {
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    const okBtn = document.getElementById('confirmOkBtn');
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('mouseenter', function() {
+        this.style.background = '#bbb';
+        this.style.transform = 'translateY(-1px)';
+        });
+        cancelBtn.addEventListener('mouseleave', function() {
+        this.style.background = '#ddd';
+        this.style.transform = 'translateY(0)';
+        });
+    }
+    
+    if (okBtn) {
+        okBtn.addEventListener('mouseenter', function() {
+        this.style.background = '#ff5252';
+        this.style.transform = 'translateY(-1px)';
+        });
+        okBtn.addEventListener('mouseleave', function() {
+        this.style.background = '#ff6b6b';
+        this.style.transform = 'translateY(0)';
+        });
+    }
+    });
+    
     document.body.appendChild(confirmModal);
 
     // Toast
@@ -50,6 +162,23 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
     `;
     document.body.appendChild(previewModal);
 
+    // Rename Modal
+    const renameModal = document.createElement('div');
+    renameModal.id = 'renameModal';
+    renameModal.className = 'modal';
+    renameModal.innerHTML = `
+      <div class="modal-content" style="width:400px;max-width:92%">
+        <h3>Rename Folder</h3>
+        <input type="text" id="renameInput" placeholder="Nama folder baru... (maks. 15 karakter)">
+        <div class="char-count" id="renameCharCount">0/15 karakter</div>
+        <div class="modal-buttons">
+          <button id="cancelRename" style="background:#ddd;padding:8px 12px;border-radius:8px;">Batal</button>
+          <button id="confirmRename" style="background:var(--primary-color);color:#fff;padding:8px 12px;border-radius:8px;">Simpan</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(renameModal);
+
     // basic modal styles (minimal, so it behaves like your other modals)
     const style = document.createElement('style');
     style.textContent = `
@@ -64,6 +193,9 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
 
     previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.style.display='none'; });
     $('#previewClose').addEventListener('click', () => previewModal.style.display='none');
+
+    renameModal.addEventListener('click', (e) => { if (e.target === renameModal) renameModal.style.display='none'; });
+    $('#cancelRename').addEventListener('click', () => renameModal.style.display='none');
 
     // expose functions
     window.repoUI = {
@@ -153,12 +285,55 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
             }
 
             previewModal.style.display = 'flex';
+        },
+        openRenameModal(oldName, onRename) {
+            $('#renameModal').style.display = 'flex';
+            $('#renameInput').value = oldName;
+            $('#renameCharCount').textContent = `${oldName.length}/15 karakter`;
+            $('#renameCharCount').className = 'char-count';
+            $('#renameInput').classList.remove('limit-reached');
+            
+            if (oldName.length >= 10 && oldName.length < 15) {
+                $('#renameCharCount').classList.add('warning');
+            } else if (oldName.length >= 15) {
+                $('#renameCharCount').classList.add('limit-reached');
+                $('#renameInput').classList.add('limit-reached');
+            }
+            
+            $('#renameInput').focus();
+            $('#renameInput').select();
+            
+            const confirmBtn = $('#confirmRename');
+            const cancelBtn = $('#cancelRename');
+            
+            function confirmHandler() {
+                const newName = $('#renameInput').value.trim();
+                $('#renameModal').style.display = 'none';
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+                onRename && onRename(newName);
+            }
+            
+            function cancelHandler() {
+                $('#renameModal').style.display = 'none';
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+            }
+            
+            confirmBtn.addEventListener('click', confirmHandler);
+            cancelBtn.addEventListener('click', cancelHandler);
+            
+            // Enter key support
+            $('#renameInput').onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    confirmHandler();
+                }
+            };
         }
     };
 })();
 
-
-//  utilities 
+// utilities 
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const r = new FileReader();
@@ -192,7 +367,7 @@ function getFolderList() {
     try { return JSON.parse(localStorage.getItem('repositoryFolders')||'[]'); } catch { return []; }
 }
 
-//  DOM elements
+// DOM elements
 const grid = document.querySelector('.grid');
 const addBtn = document.getElementById('addBtn');
 
@@ -215,8 +390,94 @@ const closeFilesModal = document.getElementById('closeFilesModal');
 if (!grid) console.warn("Grid not found");
 if (!filesModal) console.warn("filesModal not found");
 
-//  folder functions 
+// Character counter untuk folder name
+function initializeCharacterCounter() {
+    const folderInput = document.getElementById('folderInput');
+    if (!folderInput) return;
+    
+    const charCount = document.createElement('div');
+    charCount.className = 'char-count';
+    charCount.textContent = '0/15 karakter';
+    folderInput.parentNode.insertBefore(charCount, folderInput.nextSibling);
+
+    // Event listener untuk membatasi input
+    folderInput.addEventListener('input', function() {
+        const maxLength = 15;
+        const currentLength = this.value.length;
+        
+        // Update karakter count
+        charCount.textContent = `${currentLength}/${maxLength} karakter`;
+        
+        // Hapus class sebelumnya
+        charCount.classList.remove('warning', 'limit-reached');
+        this.classList.remove('limit-reached');
+        
+        // Jika mendekati batas (10-14 karakter)
+        if (currentLength >= 10 && currentLength < maxLength) {
+            charCount.classList.add('warning');
+        }
+        // Jika mencapai atau melebihi batas
+        else if (currentLength >= maxLength) {
+            charCount.classList.add('limit-reached');
+            this.classList.add('limit-reached');
+            
+            // Potong teks jika melebihi batas
+            if (currentLength > maxLength) {
+                this.value = this.value.substring(0, maxLength);
+                charCount.textContent = `${maxLength}/${maxLength} karakter (maksimal)`;
+                window.repoUI.showToast('Maksimal 15 karakter');
+            }
+        }
+    });
+
+    return charCount;
+}
+
+// Character counter untuk rename modal
+function initializeRenameCharacterCounter() {
+    const renameInput = document.getElementById('renameInput');
+    if (!renameInput) return;
+    
+    const charCount = document.getElementById('renameCharCount');
+    
+    renameInput.addEventListener('input', function() {
+        const maxLength = 15;
+        const currentLength = this.value.length;
+        
+        // Update karakter count
+        charCount.textContent = `${currentLength}/${maxLength} karakter`;
+        
+        // Hapus class sebelumnya
+        charCount.classList.remove('warning', 'limit-reached');
+        this.classList.remove('limit-reached');
+        
+        // Jika mendekati batas (10-14 karakter)
+        if (currentLength >= 10 && currentLength < maxLength) {
+            charCount.classList.add('warning');
+        }
+        // Jika mencapai atau melebihi batas
+        else if (currentLength >= maxLength) {
+            charCount.classList.add('limit-reached');
+            this.classList.add('limit-reached');
+            
+            // Potong teks jika melebihi batas
+            if (currentLength > maxLength) {
+                this.value = this.value.substring(0, maxLength);
+                charCount.textContent = `${maxLength}/${maxLength} karakter (maksimal)`;
+                window.repoUI.showToast('Maksimal 15 karakter');
+            }
+        }
+    });
+}
+
+// folder functions 
 function createFolder(name) {
+    // Validasi panjang nama
+    if (name.length > 15) {
+        window.repoUI.showToast('Nama folder maksimal 15 karakter');
+        return;
+    }
+
     // avoid duplicates
     const folders = getFolderList();
     if (folders.find(f => f.name === name)) {
@@ -233,7 +494,12 @@ function createFolder(name) {
     wrapper.innerHTML = `
         <div class="card ${colorClass}">
             <p class="folder-name">${escapeHtml(name)}</p>
-            <button class="delete-folder">×</button>
+            <div class="folder-actions">
+                <button class="rename-folder" title="Rename Folder">
+                    <i class='bx bx-edit-alt'></i>
+                </button>
+                <button class="delete-folder">×</button>
+            </div>
         </div>
     `;
 
@@ -241,16 +507,7 @@ function createFolder(name) {
     grid.insertBefore(wrapper, addWrapper);
 
     // attach handlers
-    const delBtn = wrapper.querySelector('.delete-folder');
-    delBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.repoUI.openConfirm(`Hapus folder "${name}"?`, () => {
-            deleteFolder(wrapper, name);
-        });
-    });
-
-    const card = wrapper.querySelector('.card');
-    card.addEventListener('click', () => openFolder(name));
+    attachFolderEventHandlers(wrapper, name);
 
     // persist
     folders.push({name, color: colorClass});
@@ -264,22 +521,90 @@ function createFolderFromData(name, colorClass) {
     wrapper.innerHTML = `
         <div class="card ${colorClass}">
             <p class="folder-name">${escapeHtml(name)}</p>
-            <button class="delete-folder">×</button>
+            <div class="folder-actions">
+                <button class="rename-folder" title="Rename Folder">
+                    <i class='bx bx-edit-alt'></i>
+                </button>
+                <button class="delete-folder">×</button>
+            </div>
         </div>
     `;
     const addWrapper = addBtn.closest('.card-wrapper');
     grid.insertBefore(wrapper, addWrapper);
 
+    attachFolderEventHandlers(wrapper, name);
+}
+
+// Function untuk attach event handlers ke folder
+function attachFolderEventHandlers(wrapper, folderName) {
     const delBtn = wrapper.querySelector('.delete-folder');
+    const renameBtn = wrapper.querySelector('.rename-folder');
+    const card = wrapper.querySelector('.card');
+
     delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        window.repoUI.openConfirm(`Hapus folder "${name}"?`, () => {
-            deleteFolder(wrapper, name);
+        window.repoUI.openConfirm(`Hapus folder "${folderName}"?`, () => {
+            deleteFolder(wrapper, folderName);
         });
     });
 
-    const card = wrapper.querySelector('.card');
-    card.addEventListener('click', () => openFolder(name));
+    renameBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        renameFolder(wrapper, folderName);
+    });
+
+    card.addEventListener('click', () => openFolder(folderName));
+}
+
+// Function rename folder
+function renameFolder(wrapper, oldName) {
+    window.repoUI.openRenameModal(oldName, (newName) => {
+        if (!newName || newName.trim() === '') {
+            window.repoUI.showToast('Nama folder tidak boleh kosong');
+            return;
+        }
+        
+        if (newName.length > 15) {
+            window.repoUI.showToast('Nama folder maksimal 15 karakter');
+            return;
+        }
+        
+        if (newName === oldName) {
+            window.repoUI.showToast('Nama folder tidak berubah');
+            return;
+        }
+
+        // Check for duplicate names
+        const folders = getFolderList();
+        if (folders.find(f => f.name === newName && f.name !== oldName)) {
+            window.repoUI.showToast('Folder dengan nama tersebut sudah ada');
+            return;
+        }
+
+        // Update folder name in DOM
+        const folderNameElement = wrapper.querySelector('.folder-name');
+        folderNameElement.textContent = newName;
+
+        // Update folder list in localStorage
+        const folderIndex = folders.findIndex(f => f.name === oldName);
+        if (folderIndex !== -1) {
+            folders[folderIndex].name = newName;
+            saveFolderList(folders);
+        }
+
+        // Update files in localStorage if any
+        const repoFiles = getRepoFiles();
+        if (repoFiles[oldName]) {
+            repoFiles[newName] = repoFiles[oldName];
+            delete repoFiles[oldName];
+            saveRepoFiles(repoFiles);
+        }
+
+        // Re-attach event handlers dengan nama baru
+        attachFolderEventHandlers(wrapper, newName);
+
+        window.repoUI.showToast(`Folder diubah menjadi "${newName}"`);
+    });
 }
 
 function deleteFolder(wrapper, name) {
@@ -301,17 +626,34 @@ function deleteFolder(wrapper, name) {
 function initializeExistingFolders() {
     $$('.card-wrapper:not(:last-child)').forEach(wrapper => {
         const folderName = wrapper.querySelector('.folder-name').textContent;
-        const card = wrapper.querySelector('.card');
-        const deleteBtn = wrapper.querySelector('.delete-folder');
-
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            window.repoUI.openConfirm(`Hapus folder "${folderName}"?`, () => {
-                deleteFolder(wrapper, folderName);
-            });
-        });
-
-        card.addEventListener('click', () => openFolder(folderName));
+        
+        // Tambahkan tombol rename jika belum ada
+        if (!wrapper.querySelector('.rename-folder')) {
+            const deleteBtn = wrapper.querySelector('.delete-folder');
+            if (deleteBtn) {
+                // Buat container untuk actions
+                const folderActions = document.createElement('div');
+                folderActions.className = 'folder-actions';
+                
+                // Buat tombol rename
+                const renameBtn = document.createElement('button');
+                renameBtn.className = 'rename-folder';
+                renameBtn.title = 'Rename Folder';
+                renameBtn.innerHTML = `<i class='bx bx-edit-alt'></i>`;
+                
+                // Pindahkan delete button ke container
+                deleteBtn.remove();
+                
+                // Tambahkan kedua tombol ke container
+                folderActions.appendChild(renameBtn);
+                folderActions.appendChild(deleteBtn);
+                
+                // Tambahkan container ke card
+                wrapper.querySelector('.card').appendChild(folderActions);
+            }
+        }
+        
+        attachFolderEventHandlers(wrapper, folderName);
     });
 }
 
@@ -348,54 +690,103 @@ async function saveFilesToFolder(folderName, files) {
 
 // Open folder
 let currentOpenedFolder = null;
-let injectedHeader = false;
 
 function openFolder(name) {
     currentOpenedFolder = name;
-    folderTitle.textContent = 'Isi folder: ' + name;
 
-    // inject header with + only once (do not move existing title element)
-    if (!injectedHeader) {
-        const modalContent = filesModal.querySelector('.modal-content');
-        const headerDiv = document.createElement('div');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.justifyContent = 'space-between';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.marginBottom = '10px';
+    // Hapus konten modal yang lama
+    const modalContent = filesModal.querySelector('.modal-content');
+    modalContent.innerHTML = '';
 
-        const titleClone = document.createElement('div');
-        titleClone.id = 'folderTitleClone';
-        titleClone.style.fontWeight = '700';
-        titleClone.style.fontSize = '16px';
-        titleClone.textContent = folderTitle.textContent;
+    // Buat header yang simple di tengah
+    const headerDiv = document.createElement('div');
+    headerDiv.style.textAlign = 'center';
+    headerDiv.style.marginBottom = '25px';
+    headerDiv.style.paddingBottom = '15px';
+    headerDiv.style.borderBottom = '2px solid #f0f0f0';
 
-        const plusBtn = document.createElement('button');
-        plusBtn.textContent = '＋';
-        plusBtn.title = 'Tambah file';
-        plusBtn.style.fontSize = '20px';
-        plusBtn.style.padding = '6px 10px';
-        plusBtn.style.borderRadius = '8px';
-        plusBtn.style.background = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#9EC6F3';
-        plusBtn.style.color = '#fff';
-        plusBtn.style.border = 'none';
-        plusBtn.style.cursor = 'pointer';
+    const title = document.createElement('h3');
+    title.textContent = name;
+    title.style.fontSize = '24px';
+    title.style.fontWeight = '700';
+    title.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+    title.style.webkitBackgroundClip = 'text';
+    title.style.webkitTextFillColor = 'transparent';
+    title.style.marginBottom = '8px';
 
-        plusBtn.addEventListener('click', () => {
-            fileInput.value = '';
-            fileInput.click();
-        });
+    // Container untuk tombol tambah file
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.marginTop = '15px';
 
-        headerDiv.appendChild(titleClone);
-        headerDiv.appendChild(plusBtn);
+    const addButton = document.createElement('button');
+    addButton.innerHTML = '<i class="fas fa-plus"></i> Tambah File';
+    addButton.style.padding = '10px 20px';
+    addButton.style.background = 'var(--primary-color)';
+    addButton.style.color = '#fff';
+    addButton.style.border = 'none';
+    addButton.style.borderRadius = '8px';
+    addButton.style.cursor = 'pointer';
+    addButton.style.fontSize = '14px';
+    addButton.style.fontWeight = '600';
+    addButton.style.transition = 'all 0.3s ease';
 
-        const fileListEl = filesModal.querySelector('#fileList');
-        modalContent.insertBefore(headerDiv, fileListEl);
-        injectedHeader = true;
-    } else {
-        // update cloned title text
-        const clone = $('#folderTitleClone');
-        if (clone) clone.textContent = 'Isi folder: ' + name;
-    }
+    addButton.addEventListener('mouseenter', () => {
+        addButton.style.background = '#5a6fd8';
+        addButton.style.transform = 'translateY(-2px)';
+    });
+
+    addButton.addEventListener('mouseleave', () => {
+        addButton.style.background = 'var(--primary-color)';
+        addButton.style.transform = 'translateY(0)';
+    });
+
+    addButton.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+    });
+
+    // Buat ul untuk file list
+    const fileListEl = document.createElement('ul');
+    fileListEl.id = 'fileList';
+    fileListEl.style.textAlign = 'left';
+    fileListEl.style.maxHeight = '400px';
+    fileListEl.style.overflowY = 'auto';
+    fileListEl.style.marginTop = '20px';
+
+    // Tombol tutup
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Tutup';
+    closeButton.style.padding = '10px 20px';
+    closeButton.style.background = '#ddd';
+    closeButton.style.color = '#333';
+    closeButton.style.border = 'none';
+    closeButton.style.borderRadius = '8px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.fontSize = '14px';
+    closeButton.style.fontWeight = '600';
+    closeButton.style.marginTop = '20px';
+    closeButton.style.transition = 'all 0.3s ease';
+
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.background = '#bbb';
+    });
+
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.background = '#ddd';
+    });
+
+    closeButton.addEventListener('click', () => {
+        filesModal.style.display = 'none';
+    });
+
+    // Susun elemen-elemen
+    headerDiv.appendChild(title); // HANYA title saja, subtitle dihapus
+    buttonContainer.appendChild(addButton);
+    
+    modalContent.appendChild(headerDiv);
+    modalContent.appendChild(buttonContainer);
+    modalContent.appendChild(fileListEl);
+    modalContent.appendChild(closeButton);
 
     renderFilesInModal(name);
     filesModal.style.display = 'flex';
@@ -405,46 +796,94 @@ function openFolder(name) {
 function renderFilesInModal(folderName) {
     const repo = getRepoFiles();
     const files = repo[folderName] || [];
-    fileList.innerHTML = '';
+    const fileListEl = document.getElementById('fileList');
+    fileListEl.innerHTML = '';
 
     if (!files.length) {
-        fileList.innerHTML = "<li style='color:#666;padding:8px;'>Belum ada file.</li>";
+        fileListEl.innerHTML = `
+            <li style='
+                color: #666; 
+                padding: 20px; 
+                text-align: center; 
+                font-style: italic;
+                list-style: none;
+            '>
+                Belum ada file dalam folder ini
+            </li>`;
         return;
     }
 
     files.forEach(file => {
         const li = document.createElement('li');
-        li.style.padding = '8px 4px';
+        li.style.padding = '12px 8px';
         li.style.listStyle = 'none';
+        li.style.borderBottom = '1px solid #f0f0f0';
 
         const cont = document.createElement('div');
         cont.style.display = 'flex';
         cont.style.justifyContent = 'space-between';
         cont.style.alignItems = 'center';
-        cont.style.gap = '12px';
+        cont.style.gap = '15px';
 
         const left = document.createElement('div');
-        left.innerHTML = `<div style="font-weight:700;">📄 ${escapeHtml(file.name)}</div>
-                          <div style="font-size:12px;color:#666;">${file.uploadedAt}</div>`;
+        left.style.flex = '1';
+        left.innerHTML = `
+            <div style="font-weight:700; font-size:15px;">📄 ${escapeHtml(file.name)}</div>
+            <div style="font-size:12px;color:#666; margin-top:4px;">${file.uploadedAt}</div>
+        `;
 
         const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.gap = '8px';
 
         const viewBtn = document.createElement('button');
         viewBtn.textContent = 'Lihat';
-        viewBtn.style.padding = '6px 8px';
-        viewBtn.style.borderRadius = '8px';
+        viewBtn.style.padding = '8px 12px';
+        viewBtn.style.borderRadius = '6px';
+        viewBtn.style.background = 'var(--primary-color)';
+        viewBtn.style.color = '#fff';
+        viewBtn.style.border = 'none';
         viewBtn.style.cursor = 'pointer';
+        viewBtn.style.fontSize = '12px';
+        viewBtn.style.fontWeight = '600';
+        viewBtn.style.transition = 'all 0.3s ease';
+
+        viewBtn.addEventListener('mouseenter', () => {
+            viewBtn.style.background = '#5a6fd8';
+            viewBtn.style.transform = 'translateY(-1px)';
+        });
+
+        viewBtn.addEventListener('mouseleave', () => {
+            viewBtn.style.background = 'var(--primary-color)';
+            viewBtn.style.transform = 'translateY(0)';
+        });
+
         viewBtn.addEventListener('click', () => {
             window.repoUI.openPreview({name: file.name, mime: file.type, dataUrl: file.dataUrl});
         });
 
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Hapus';
-        delBtn.style.padding = '6px 8px';
-        delBtn.style.borderRadius = '8px';
+        delBtn.style.padding = '8px 12px';
+        delBtn.style.borderRadius = '6px';
         delBtn.style.background = '#ff6b6b';
         delBtn.style.color = '#fff';
+        delBtn.style.border = 'none';
         delBtn.style.cursor = 'pointer';
+        delBtn.style.fontSize = '12px';
+        delBtn.style.fontWeight = '600';
+        delBtn.style.transition = 'all 0.3s ease';
+
+        delBtn.addEventListener('mouseenter', () => {
+            delBtn.style.background = '#ff5252';
+            delBtn.style.transform = 'translateY(-1px)';
+        });
+
+        delBtn.addEventListener('mouseleave', () => {
+            delBtn.style.background = '#ff6b6b';
+            delBtn.style.transform = 'translateY(0)';
+        });
+
         delBtn.addEventListener('click', () => {
             window.repoUI.openConfirm(`Hapus file "${file.name}"?`, () => {
                 deleteFileFromFolder(folderName, file.id);
@@ -456,12 +895,7 @@ function renderFilesInModal(folderName) {
         cont.appendChild(left);
         cont.appendChild(right);
         li.appendChild(cont);
-        fileList.appendChild(li);
-
-        const hr = document.createElement('hr');
-        hr.style.border = 'none';
-        hr.style.borderTop = '1px solid rgba(0,0,0,0.05)';
-        fileList.appendChild(hr);
+        fileListEl.appendChild(li);
     });
 }
 
@@ -475,7 +909,7 @@ function deleteFileFromFolder(folderName, fileId) {
     window.repoUI.showToast('File dihapus');
 }
 
-//  hook file input 
+// hook file input 
 if (fileInput) {
     fileInput.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files || []);
@@ -493,37 +927,95 @@ if (fileInput) {
     });
 }
 
-//  add-folder button wiring
+// add-folder button wiring
 if (addBtn) {
     addBtn.addEventListener('click', () => {
         if (addFolderModal) {
             addFolderModal.style.display = 'flex';
             newFolderName.value = '';
             newFolderName.focus();
+            
+            // Reset counter
+            const charCount = document.querySelector('.char-count');
+            if (charCount) {
+                charCount.textContent = '0/15 karakter';
+                charCount.classList.remove('warning', 'limit-reached');
+                newFolderName.classList.remove('limit-reached');
+            }
         } else {
             // fallback: prompt like UI (but we avoid native prompt)
-            const name = prompt('Nama folder baru:');
-            if (name) createFolder(name.trim());
+            const name = prompt('Nama folder baru (maks. 15 karakter):');
+            if (name) {
+                const trimmedName = name.trim();
+                if (trimmedName.length > 15) {
+                    window.repoUI.showToast('Nama folder maksimal 15 karakter');
+                } else {
+                    createFolder(trimmedName);
+                }
+            }
         }
     });
 }
 
+// Initialize character counters
+let charCountElement = null;
+document.addEventListener('DOMContentLoaded', function() {
+    charCountElement = initializeCharacterCounter();
+    initializeRenameCharacterCounter();
+});
+
 // modal add folder buttons
 if (cancelFolderBtn) {
-    cancelFolderBtn.addEventListener('click', () => { if (addFolderModal) addFolderModal.style.display='none'; });
+    cancelFolderBtn.addEventListener('click', () => { 
+        if (addFolderModal) {
+            addFolderModal.style.display='none';
+            
+            // Reset counter
+            if (charCountElement) {
+                charCountElement.textContent = '0/15 karakter';
+                charCountElement.classList.remove('warning', 'limit-reached');
+                newFolderName.classList.remove('limit-reached');
+            }
+        }
+    });
 }
+
 if (createFolderBtn) {
     createFolderBtn.addEventListener('click', () => {
         const name = (newFolderName.value||'').trim();
-        if (!name) { window.repoUI.showToast('Nama folder tidak boleh kosong'); return; }
+        
+        if (!name) { 
+            window.repoUI.showToast('Nama folder tidak boleh kosong'); 
+            return; 
+        }
+        
+        if (name.length > 15) {
+            window.repoUI.showToast('Nama folder maksimal 15 karakter');
+            newFolderName.classList.add('limit-reached');
+            if (charCountElement) {
+                charCountElement.classList.add('limit-reached');
+            }
+            return;
+        }
+        
         createFolder(name);
         if (addFolderModal) addFolderModal.style.display='none';
+        
+        // Reset counter
+        if (charCountElement) {
+            charCountElement.textContent = '0/15 karakter';
+            charCountElement.classList.remove('warning', 'limit-reached');
+            newFolderName.classList.remove('limit-reached');
+        }
     });
 }
 
 // upload modal cancel
 if (cancelUpload) {
-    cancelUpload.addEventListener('click', () => { if (uploadModal) uploadModal.style.display='none'; if (fileInput) fileInput.value = ''; });
+    cancelUpload.addEventListener('click', () => { 
+        if (uploadModal) uploadModal.style.display='none'; 
+        if (fileInput) fileInput.value = ''; 
+    });
 }
 
 // confirmUpload (if used)
@@ -540,16 +1032,20 @@ if (confirmUpload) {
     });
 }
 
-// close files modal
-if (closeFilesModal) {
-    closeFilesModal.addEventListener('click', () => { filesModal.style.display = 'none'; });
-}
-
 // click outside to close for existing modals
 window.addEventListener('click', (e) => {
-    if (e.target === addFolderModal) addFolderModal.style.display = 'none';
+    if (e.target === addFolderModal) {
+        addFolderModal.style.display = 'none';
+        // Reset counter
+        if (charCountElement) {
+            charCountElement.textContent = '0/15 karakter';
+            charCountElement.classList.remove('warning', 'limit-reached');
+            newFolderName.classList.remove('limit-reached');
+        }
+    }
     if (e.target === uploadModal) uploadModal.style.display = 'none';
     if (e.target === filesModal) filesModal.style.display = 'none';
+    if (e.target === $('#renameModal')) $('#renameModal').style.display = 'none';
 });
 
 // -------------------- escape html --------------------
@@ -558,7 +1054,7 @@ function escapeHtml(s) {
     return s.replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-//  init (load folders & attach handlers) 
+// init (load folders & attach handlers) 
 document.addEventListener('DOMContentLoaded', async () => {
     initializeExistingFolders();
 
