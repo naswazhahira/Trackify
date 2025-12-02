@@ -25,13 +25,26 @@ async function registerUser(req, res) {
 
         const newUser = await userService.createUser(fullname, username, passwordHash, pinHash);
 
+        // GENERATE TOKEN DENGAN USER ID - YANG BARU
+        const token = jwt.sign(
+            { 
+                id: newUser.id, // <- TAMBAHKAN ID DI SINI
+                username: newUser.username, 
+                fullname: newUser.fullname 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
         return res.status(201).json({
             message: 'Registrasi berhasil.',
             user: {
+                id: newUser.id, // <- KIRIM ID JUGA KE FRONTEND
                 username: newUser.username,
                 fullname: newUser.fullname,
                 pin: pin
-            }
+            },
+            token // <- KIRIM TOKEN JUGA
         });
     } catch (err) {
         console.error('Error detail:', err);
@@ -39,7 +52,7 @@ async function registerUser(req, res) {
     }
 }
 
-// Login user
+// Login user - YANG SUDAH DIPERBAIKI
 async function loginUser(req, res) {
     try {
         const { username, password } = req.body;
@@ -55,16 +68,25 @@ async function loginUser(req, res) {
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) return res.status(401).json({ error: 'Kata sandi salah. Silakan coba lagi.' });
 
-        // Generate token JWT
+        // GENERATE TOKEN DENGAN USER ID - YANG SUDAH DIPERBAIKI
         const token = jwt.sign(
-            { username: user.username, fullname: user.fullname },
+            { 
+                id: user.id, // <- INI YANG PENTING! TAMBAHKAN ID
+                username: user.username, 
+                fullname: user.fullname 
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
 
         return res.status(200).json({ 
             message: `Selamat datang kembali, ${user.fullname}!`, 
-            user: { username: user.username, fullname: user.fullname, profilePicture: user.profile_picture },
+            user: { 
+                id: user.id, // <- KIRIM ID JUGA KE FRONTEND
+                username: user.username, 
+                fullname: user.fullname, 
+                profilePicture: user.profile_picture_url 
+            },
             token
         });
     } catch (err) {
