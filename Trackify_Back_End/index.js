@@ -2,16 +2,24 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
-// Import route user
 const userRoutes = require('./src/routes/userRoutes');
+const goalsRoutes = require('./src/routes/goalsRoutes');
+const studysessionRoutes = require('./src/routes/studysessionRoutes');
+const dailySummaryRoutes = require('./src/routes/dailySummaryRoutes');
+const taskRoutes = require('./src/routes/taskRoutes');
+
+// Register routes
 app.use('/api/users', userRoutes);
+app.use('/api/goals', goalsRoutes);
+app.use('/api/study-sessions', studysessionRoutes); 
+app.use('/api/daily-summaries', dailySummaryRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Route testing awal
 app.get("/", (req, res) => {
