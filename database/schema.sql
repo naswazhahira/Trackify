@@ -51,6 +51,7 @@ CREATE TABLE  IF NOT EXISTS study_sessions (
     end_time TIMESTAMP,
     duration_seconds INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_study_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_study_sessions_goal FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE SET NULL
 );
@@ -62,6 +63,7 @@ CREATE TABLE  IF NOT EXISTS daily_summaries (
     total_study_time_seconds INT DEFAULT 0,
     goals_completed INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_daily_summaries_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT unique_user_date UNIQUE (user_id, summary_date)
 );
