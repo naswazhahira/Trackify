@@ -12,17 +12,14 @@ const userRoutes = require('./src/routes/userRoutes');
 const goalsRoutes = require('./src/routes/goalsRoutes');
 const studysessionRoutes = require('./src/routes/studysessionRoutes');
 const dailySummaryRoutes = require('./src/routes/dailySummaryRoutes');
-const repository_foldersRoutes = require('./src/routes/repository_foldersRoutes');
-const repository_filesRoutes = require('./src/routes/repository_filesRoutes');
+const taskRoutes = require('./src/routes/taskRoutes');
 
-// api/folders
 // Register routes
 app.use('/api/users', userRoutes);
 app.use('/api/goals', goalsRoutes);
 app.use('/api/study-sessions', studysessionRoutes); 
 app.use('/api/daily-summaries', dailySummaryRoutes);
-app.use('/api/folders', repository_foldersRoutes); 
-app.use('/api/files', repository_filesRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Route testing awal
 app.get("/", (req, res) => {
