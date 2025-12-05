@@ -86,3 +86,49 @@ CREATE TABLE IF NOT EXISTS tasks (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+-- Tabel folders
+CREATE TABLE IF NOT EXISTS repository_folders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    folder_name VARCHAR(255) NOT NULL,
+    color VARCHAR(10),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tabel files
+CREATE TABLE IF NOT EXISTS repository_files (
+    id SERIAL PRIMARY KEY,
+    folder_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(50) NOT NULL,
+    file_size INTEGER NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT NOW(),
+    
+    FOREIGN KEY (folder_id) REFERENCES repository_folders(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_folders_user ON repository_folders(user_id);
+CREATE INDEX IF NOT EXISTS idx_files_folder ON repository_files(folder_id);
+CREATE INDEX IF NOT EXISTS idx_files_user ON repository_files(user_id);
+
+-- Trigger untuk update otomatis updated_at di folders
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_folders_updated_at
+    BEFORE UPDATE ON repository_folders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
