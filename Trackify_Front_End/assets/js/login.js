@@ -4,13 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const panelPemulihan = document.getElementById('panelPemulihan');
   const panelResetPassword = document.getElementById('panelResetPassword');
 
+
   const formLogin = document.getElementById('formLogin');
   const loginUsername = document.getElementById('login-username');
   const loginPassword = document.getElementById('login-password');
 
+
   const tombolLogin = document.getElementById('tombolLogin');
   const tombolRegister = document.getElementById('tombolRegister');
   const tombolLupaPassword = document.getElementById('tombolLupaPassword');
+
 
   const formRegister = document.getElementById('formRegister');
   const registerFullname = document.getElementById('register-namalengkap');
@@ -19,11 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const tombolDaftar = document.getElementById('tombolDaftar');
   const tombolBatal = document.getElementById('tombolBatal');
 
+
   const formLupa = document.getElementById('formLupaPassword');
   const lupaUsername = document.getElementById('lupa-username');
   const lupaPin = document.getElementById('lupa-pin');
   const tombolVerifikasi = document.getElementById('tombolVerifikasi');
   const tombolBatalPemulihan = document.getElementById('tombolBatalPemulihan');
+
 
   const formReset = document.getElementById('formResetPassword');
   const resetPassword = document.getElementById('reset-password');
@@ -34,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const popupOverlay = document.getElementById('popupOverlay');
   const popupText = document.getElementById('popupText');
   const popupBtn = document.getElementById('popupBtn');
+
 
   // safety: jika elemen penting tidak ditemukan, tunjukkan peringatan di console
   const required = [
@@ -46,10 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el) console.warn(`Elemen "${name}" tidak ditemukan.`);
   });
 
-  let currentResetUser = null;
-  const API_BASE = 'http://localhost:5000/api/users'; 
 
-// Handler untuk error inline
+  let currentResetUser = null;
+  const API_BASE = 'http://localhost:5000/api/users';
+
+
+  // Handler untuk error inline
   function setError(id, message) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -71,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
   function clearAllErrorsInForm(formEl) {
     if (!formEl) return;
     const errs = formEl.querySelectorAll('.error-text');
@@ -85,65 +94,70 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-// Pop-up Handler
-    function showPopup(messageHtml, withCopy = false, copyText = '') {
-        popupText.innerHTML = messageHtml;
-        const oldCopy = popupText.querySelector('.popup-copy-btn');
-        if (oldCopy) oldCopy.remove();
+
+  // Pop-up Handler
+  function showPopup(messageHtml, withCopy = false, copyText = '') {
+    popupText.innerHTML = messageHtml;
+    const oldCopy = popupText.querySelector('.popup-copy-btn');
+    if (oldCopy) oldCopy.remove();
 
 
-        if (withCopy && copyText) {
-          const copyBtn = document.createElement('button');
-          copyBtn.type = 'button';
-          copyBtn.textContent = 'Salin PIN';
-          copyBtn.className = 'popup-copy-btn popup-btn';
-          copyBtn.style.marginTop = '8px';
-          copyBtn.style.display = 'inline-block';
-          copyBtn.addEventListener('click', async () => {
-            try {
-              await navigator.clipboard.writeText(copyText);
-              copyBtn.textContent = 'Disalin!';
-              copyBtn.disabled = true;
-            } catch {
-              copyBtn.textContent = 'Gagal salin';
-            }
-          });
-          popupText.appendChild(copyBtn);
+    if (withCopy && copyText) {
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.textContent = 'Salin PIN';
+      copyBtn.className = 'popup-copy-btn popup-btn';
+      copyBtn.style.marginTop = '8px';
+      copyBtn.style.display = 'inline-block';
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(copyText);
+          copyBtn.textContent = 'Disalin!';
+          copyBtn.disabled = true;
+        } catch {
+          copyBtn.textContent = 'Gagal salin';
         }
-
-        // Tampilkan Pop-up
-        popupOverlay.classList.add('tampil');
-        popupBtn.focus();
-        const onOk = () => {
-          popupBtn.removeEventListener('click', onOk);
-          popupOverlay.classList.remove('tampil');
-        };
-        popupBtn.addEventListener('click', onOk);
-      }
-
-    // Peralihan panel
-    function tampilPanel(el) {
-        const panels = [panelLogin, panelRegister, panelPemulihan, panelResetPassword];
-        panels.forEach(p => {
-        if (!p) return;
-        if (p === el) {
-            p.classList.remove('tersembunyi');
-            p.classList.add('tampil');
-        } else {
-            p.classList.remove('tampil');
-            p.classList.add('tersembunyi');
-        }
-        });
-    }
-
-    // Tombol pada halaman registrasi
-    if (tombolRegister) {
-      tombolRegister.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (panelRegister) tampilPanel(panelRegister);
-        if (registerUsername) registerUsername.focus();
       });
+      popupText.appendChild(copyBtn);
     }
+
+
+    // Tampilkan Pop-up
+    popupOverlay.classList.add('tampil');
+    popupBtn.focus();
+    const onOk = () => {
+      popupBtn.removeEventListener('click', onOk);
+      popupOverlay.classList.remove('tampil');
+    };
+    popupBtn.addEventListener('click', onOk);
+  }
+
+
+  // Peralihan panel
+  function tampilPanel(el) {
+    const panels = [panelLogin, panelRegister, panelPemulihan, panelResetPassword];
+    panels.forEach(p => {
+      if (!p) return;
+      if (p === el) {
+        p.classList.remove('tersembunyi');
+        p.classList.add('tampil');
+      } else {
+        p.classList.remove('tampil');
+        p.classList.add('tersembunyi');
+      }
+    });
+  }
+
+
+  // Tombol pada halaman registrasi
+  if (tombolRegister) {
+    tombolRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (panelRegister) tampilPanel(panelRegister);
+      if (registerUsername) registerUsername.focus();
+    });
+  }
+
 
   if (tombolBatal) {
     tombolBatal.addEventListener('click', (e) => {
@@ -154,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   // Tombol lupa password
   if (tombolLupaPassword) {
     tombolLupaPassword.addEventListener('click', (e) => {
@@ -162,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (lupaUsername) lupaUsername.focus();
     });
   }
+
 
   // Tombol batal pemulihan akun
   if (tombolBatalPemulihan) {
@@ -172,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   // Tombol batal reset password
   if (tombolBatalReset) {
     tombolBatalReset.addEventListener('click', (e) => {
@@ -181,7 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-// Attach input listeners to clear per-field error on input
+
+  // Attach input listeners to clear per-field error on input
   const mapInputsToErrors = [
     {input: loginUsername, errId: 'err-login-username'},
     {input: loginPassword, errId: 'err-login-password'},
@@ -193,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {input: resetPassword, errId: 'err-reset-password'}
   ];
 
+
   mapInputsToErrors.forEach(mapping => {
     if (!mapping.input) return;
     mapping.input.addEventListener('input', () => {
@@ -200,233 +219,284 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-    // Formulir Input Registrasi
-    if (formRegister){
-        formRegister.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearAllErrorsInForm(formRegister);
 
-            const fullname = registerFullname.value.trim();
-            const username = registerUsername.value.trim();
-            const password = registerPassword.value.trim();
+  // ========== FORM REGISTER ==========
+  if (formRegister) {
+    formRegister.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAllErrorsInForm(formRegister);
 
-            let valid = true;
 
-            if (!fullname) {
-            setError('err-register-namalengkap', 'Nama lengkap wajib diisi');
-            valid = false;
-            }
+      const fullname = registerFullname.value.trim();
+      const username = registerUsername.value.trim();
+      const password = registerPassword.value.trim();
 
-            if (!username) {
-            setError('err-register-username', 'Nama pengguna wajib diisi');
-            valid = false;
-            }
 
-            if (!password) {
-            setError('err-register-password', 'Kata sandi wajib diisi');
-            valid = false;
-            }
-            else if (password.length < 5) {
-            setError('err-register-password', 'Kata sandi minimal terdiri dari 5 karakter');
-            valid = false;
-            }
+      let valid = true;
 
-            if(!valid) return;
 
-            try {
-            const res = await fetch(`${API_BASE}/register`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ fullname, username, password })
-            });
-            const data = await res.json();
+      if (!fullname) {
+        setError('err-register-namalengkap', 'Nama lengkap wajib diisi');
+        valid = false;
+      }
 
-            if (!res.ok) {
-              showPopup(data.error || 'Terjadi kesalahan pada proses registrasi');
-              return;
-            }
 
-            //Pop-up informasi registrasi berhasil
-            formRegister.reset();
+      if (!username) {
+        setError('err-register-username', 'Nama pengguna wajib diisi');
+        valid = false;
+      }
 
-            showPopup(`Registrasi berhasil!<br>Pin pemulihan akun: <strong>${data.user.pin}</strong><br>Silakan melakukan login kembali!`, true, data.user.pin); 
-           
-            const onOk = () => {
-                popupBtn.removeEventListener('click', onOk);
-                tampilPanel(panelLogin);
-                if (loginUsername) loginUsername.focus();
-            };
-            popupBtn.addEventListener('click', onOk, { once: true });
-          } catch (err) {
-              console.error(err);
-              showPopup('Tidak dapat terhubung ke server.');
-            }
+
+      if (!password) {
+        setError('err-register-password', 'Kata sandi wajib diisi');
+        valid = false;
+      } else if (password.length < 5) {
+        setError('err-register-password', 'Kata sandi minimal terdiri dari 5 karakter');
+        valid = false;
+      }
+
+
+      if(!valid) return;
+
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullname, username, password })
         });
-    }
+        const data = await res.json();
 
-    // Formulir pengisian Login
-    if (formLogin) {
-        formLogin.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearAllErrorsInForm(formLogin);
 
-            const username = (loginUsername && loginUsername.value || '').trim();
-            const password = (loginPassword && loginPassword.value || '').trim();
+        if (!res.ok) {
+          showPopup(data.error || 'Terjadi kesalahan pada proses registrasi');
+          return;
+        }
 
-            let valid = true;
 
-            if (!username) {
-            setError('err-login-username', 'Nama pengguna wajib diisi');
-            valid = false;
-            }
-
-            if (!password) {
-              setError('err-login-password', 'Kata sandi wajib diisi');
-              valid = false;
-            } 
-            else if (password.length < 5) {
-              setError('err-login-password', 'Kata sandi minimal terdiri dari 5 karakter');
-              valid = false;
-            }
-
-            if (!valid) return;
-
-            try {
-              const res = await fetch(`${API_BASE}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-              });
-              const data = await res.json();
-
-              if (!res.ok) {
-                showPopup(data.error || 'Login gagal');
-                return;
-              }
-
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-
-            // Pesan Selamat bila Username dan Password benar
-            showPopup(`Selamat datang kembali, ${data.user.fullname || data.user.username}!`);
-
-            // Redirect ke beranda.html setelah 2 detik
-            setTimeout(() => {
-                window.location.href = 'beranda.html';
-            }, 2000);
-        }catch (err) {
+        // Reset form
+        formRegister.reset();
+       
+        // Tampilkan popup dengan PIN
+        showPopup(`Registrasi berhasil!<br>Pin pemulihan akun: <strong>${data.user.pin}</strong><br>Silakan melakukan login kembali!`, true, data.user.pin);
+       
+        // Ketika popup OK diklik, kembali ke login
+        const onOk = () => {
+          popupBtn.removeEventListener('click', onOk);
+          tampilPanel(panelLogin);
+          if (loginUsername) loginUsername.focus();
+        };
+        popupBtn.addEventListener('click', onOk, { once: true });
+       
+      } catch (err) {
         console.error(err);
         showPopup('Tidak dapat terhubung ke server.');
       }
     });
-    }
+  }
 
-    // Formulir Input Pemulihan Akun
-    if (formLupa) {
-        formLupa.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAllErrorsInForm(formLupa);
 
-        const username = (lupaUsername && lupaUsername.value || '').trim();
-        const pin = (lupaPin && lupaPin.value || '').trim();
+  // ========== FORM LOGIN ==========
+  if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAllErrorsInForm(formLogin);
 
-        let valid = true;
 
-        if (!username) {
+      const username = (loginUsername && loginUsername.value || '').trim();
+      const password = (loginPassword && loginPassword.value || '').trim();
+
+
+      let valid = true;
+
+
+      if (!username) {
+        setError('err-login-username', 'Nama pengguna wajib diisi');
+        valid = false;
+      }
+
+
+      if (!password) {
+        setError('err-login-password', 'Kata sandi wajib diisi');
+        valid = false;
+      } else if (password.length < 5) {
+        setError('err-login-password', 'Kata sandi minimal terdiri dari 5 karakter');
+        valid = false;
+      }
+
+
+      if (!valid) return;
+
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+
+        if (!res.ok) {
+          showPopup(data.error || 'Login gagal');
+          return;
+        }
+
+
+        // ========== PERBAIKAN DI SINI ==========
+        // Format data user dengan konsisten
+        const userData = {
+          id: data.user?.id || null,
+          username: data.user?.username || username,
+          fullname: data.user?.fullname || '',
+          profile_picture: data.user?.profilePicture || data.user?.profile_picture || null,
+          created_at: data.user?.created_at || new Date().toISOString()
+        };
+
+
+        // Simpan ke localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+
+        // Pesan Selamat
+        showPopup(`Selamat datang, ${userData.fullname || userData.username}!`);
+
+
+        // Redirect ke profile.html setelah 2 detik
+        setTimeout(() => {
+          window.location.href = 'beranda.html';
+        }, 2000);
+       
+      } catch (err) {
+        console.error(err);
+        showPopup('Tidak dapat terhubung ke server.');
+      }
+    });
+  }
+
+
+  // ========== FORM LUPA PASSWORD ==========
+  if (formLupa) {
+    formLupa.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAllErrorsInForm(formLupa);
+
+
+      const username = (lupaUsername && lupaUsername.value || '').trim();
+      const pin = (lupaPin && lupaPin.value || '').trim();
+
+
+      let valid = true;
+
+
+      if (!username) {
         setError('err-lupa-username', 'Nama pengguna wajib diisi');
         valid = false;
-        }
+      }
 
-        if (!pin) {
+
+      if (!pin) {
         setError('err-lupa-pin', 'PIN pemulihan wajib diisi');
         valid = false;
-        } 
-        else if (pin.length < 4) {
+      } else if (pin.length < 4) {
         setError('err-lupa-pin', 'PIN harus terdiri dari 4 digit angka');
         valid = false;
+      }
+
+
+      if(!valid) return;
+
+
+      try {
+        const res = await fetch(`${API_BASE}/verify-pin`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pin })
+        });
+        const data = await res.json();
+
+
+        if (!res.ok) {
+          showPopup(data.error || 'Verifikasi PIN gagal');
+          return;
         }
 
-        if(!valid) return;
-
-        try {
-          const res = await fetch(`${API_BASE}/verify-pin`, { 
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, pin })
-          });
-          const data = await res.json();
-
-          if (!res.ok) {
-            showPopup(data.error || 'Verifikasi PIN gagal');
-            return;
-          }
 
         // Bila berhasil
         currentResetUser = username;
 
+
         // Alihkan ke panel reset password
         showPopup('Verifikasi berhasil. Silakan buat password baru.');
         const onOk = () => {
-            popupBtn.removeEventListener('click', onOk);
-            tampilPanel(panelResetPassword);
-            if (resetPassword) resetPassword.focus();
+          popupBtn.removeEventListener('click', onOk);
+          tampilPanel(panelResetPassword);
+          if (resetPassword) resetPassword.focus();
         };
         popupBtn.addEventListener('click', onOk, { once: true });
-        } catch (err) {
+       
+      } catch (err) {
         console.error(err);
         showPopup('Tidak dapat terhubung ke server.');
       }
     });
-    }
+  }
 
 
-    // Formulir reset password
-    if (formReset) {
-        formReset.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAllErrorsInForm(formReset);
+  // ========== FORM RESET PASSWORD ==========
+  if (formReset) {
+    formReset.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAllErrorsInForm(formReset);
 
-        const newPassword = (resetPassword && resetPassword.value || '').trim();
-        if (!newPassword) {
-            setError('err-reset-password', 'Silakan masukkan kata sandi baru.');
-            return;
+
+      const newPassword = (resetPassword && resetPassword.value || '').trim();
+      if (!newPassword) {
+        setError('err-reset-password', 'Silakan masukkan kata sandi baru.');
+        return;
+      }
+      if (newPassword.length < 5) {
+        setError('err-reset-password', 'Kata sandi minimal terdiri dari 5 karakter.');
+        return;
+      }
+
+
+      try {
+        const res = await fetch(`${API_BASE}/reset-password`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentResetUser, newPassword })
+        });
+        const data = await res.json();
+
+
+        if (!res.ok) {
+          showPopup(data.error || 'Reset password gagal');
+          return;
         }
-        if (newPassword.length < 5) {
-            setError('err-reset-password', 'Kata sandi minimal terdiri dari 5 karakter.');
-            return;
-        }
 
-        try {
-          const res = await fetch(`${API_BASE}/reset-password`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: currentResetUser, newPassword })
-          });
-          const data = await res.json();
-
-          if (!res.ok) {
-            showPopup(data.error || 'Reset password gagal');
-            return;
-          }
 
         currentResetUser = null;
         formReset.reset();
 
+
         showPopup('Password berhasil diubah. Silakan login dengan password baru.');
         const onOk = () => {
-            popupBtn.removeEventListener('click', onOk);
-            tampilPanel(panelLogin);
-            if (loginUsername) loginUsername.focus();
+          popupBtn.removeEventListener('click', onOk);
+          tampilPanel(panelLogin);
+          if (loginUsername) loginUsername.focus();
         };
         popupBtn.addEventListener('click', onOk, { once: true });
-        } catch (err) {
+       
+      } catch (err) {
         console.error(err);
         showPopup('Tidak dapat terhubung ke server.');
       }
     });
-    }
+  }
 
-    // initial focus
-    if (loginUsername) loginUsername.focus();
+
+  // initial focus
+  if (loginUsername) loginUsername.focus();
 });
-
