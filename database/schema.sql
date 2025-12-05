@@ -65,3 +65,22 @@ CREATE TABLE  IF NOT EXISTS daily_summaries (
     CONSTRAINT fk_daily_summaries_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT unique_user_date UNIQUE (user_id, summary_date)
 );
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    due_date DATE NOT NULL,
+    priority VARCHAR(20) DEFAULT 'normal',
+    category VARCHAR(50) DEFAULT 'kuliah',
+    status VARCHAR(20) DEFAULT 'todo',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_tasks_user
+        FOREIGN KEY (user_id) 
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
