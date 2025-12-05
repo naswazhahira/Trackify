@@ -3,14 +3,12 @@ const closeSidebar = document.getElementById('closeSidebar');
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-
 console.log('🔍 Sidebar Elements:', {
     hamburgerIcon: !!hamburgerIcon,
     closeSidebar: !!closeSidebar,
     sidebar: !!sidebar,
     sidebarOverlay: !!sidebarOverlay
 });
-
 
 // Buka sidebar
 if (hamburgerIcon) {
@@ -27,7 +25,6 @@ if (hamburgerIcon) {
     console.error('❌ Hamburger icon tidak ditemukan');
 }
 
-
 // Tutup sidebar
 if (closeSidebar) {
     closeSidebar.addEventListener('click', function(e) {
@@ -41,7 +38,6 @@ if (closeSidebar) {
     });
 }
 
-
 // Tutup sidebar ketika overlay diklik
 if (sidebarOverlay) {
     sidebarOverlay.addEventListener('click', function() {
@@ -51,7 +47,6 @@ if (sidebarOverlay) {
         document.body.style.overflow = '';
     });
 }
-
 
 // Tutup sidebar ketika ESC ditekan
 document.addEventListener('keydown', function(event) {
@@ -65,62 +60,10 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-
 console.log("repository-final.js loaded");
 const demoFileUrl = "/mnt/data/ad2af446-efbf-4ff0-91c8-df4e3d487831.jpg";
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
-
-
-// API Configuration
-const API_BASE_URL = 'http://localhost:5000/api'; 
-const API_FOLDERS = `${API_BASE_URL}/repository_folders`;
-const API_FILES = `${API_BASE_URL}/files`;
-
-// Helper functions for API calls
-async function apiCall(endpoint, method = 'GET', data = null) {
-    try {
-        const token = localStorage.getItem('token');
-        const config = {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-        };
-
-        if (data && (method === 'POST' || method === 'PUT')) {
-            config.body = JSON.stringify(data);
-        }
-
-        console.log(`API ${method} ${endpoint}`, data);
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-       
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('API call error:', error);
-        throw error;
-    }
-}
-
-function getCurrentUserId() {
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-        alert("Silakan login dulu.");
-        window.location.href = "index.html";
-        return null;
-    }
-
-    console.log("Current User ID:", userId);
-    return userId;
-}
-
 
 (function createUIHelpers() {
    // Confirm modal
@@ -159,12 +102,11 @@ function getCurrentUserId() {
     </div>
     `;
 
-
     // Tambahkan event listeners untuk hover effects
     document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('confirmCancelBtn');
     const okBtn = document.getElementById('confirmOkBtn');
-   
+    
     if (cancelBtn) {
         cancelBtn.addEventListener('mouseenter', function() {
         this.style.background = '#bbb';
@@ -175,7 +117,7 @@ function getCurrentUserId() {
         this.style.transform = 'translateY(0)';
         });
     }
-   
+    
     if (okBtn) {
         okBtn.addEventListener('mouseenter', function() {
         this.style.background = '#ff5252';
@@ -187,9 +129,8 @@ function getCurrentUserId() {
         });
     }
     });
-   
+    
     document.body.appendChild(confirmModal);
-
 
     // Toast
     const toast = document.createElement('div');
@@ -204,7 +145,6 @@ function getCurrentUserId() {
     toast.style.fontSize = '14px';
     toast.style.display = 'none';
     document.body.appendChild(toast);
-
 
     // Small preview modal (in-modal preview optional)
     const previewModal = document.createElement('div');
@@ -221,7 +161,6 @@ function getCurrentUserId() {
       </div>
     `;
     document.body.appendChild(previewModal);
-
 
     // Rename Modal
     const renameModal = document.createElement('div');
@@ -240,7 +179,6 @@ function getCurrentUserId() {
     `;
     document.body.appendChild(renameModal);
 
-
     // basic modal styles (minimal, so it behaves like your other modals)
     const style = document.createElement('style');
     style.textContent = `
@@ -249,19 +187,15 @@ function getCurrentUserId() {
     `;
     document.head.appendChild(style);
 
-
     // wiring
     confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.style.display='none'; });
     $('#confirmCancelBtn').addEventListener('click', () => confirmModal.style.display='none');
 
-
     previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.style.display='none'; });
     $('#previewClose').addEventListener('click', () => previewModal.style.display='none');
 
-
     renameModal.addEventListener('click', (e) => { if (e.target === renameModal) renameModal.style.display='none'; });
     $('#cancelRename').addEventListener('click', () => renameModal.style.display='none');
-
 
     // expose functions
     window.repoUI = {
@@ -289,7 +223,6 @@ function getCurrentUserId() {
             const dl = $('#previewDownload');
             title.textContent = name;
             body.innerHTML = '';
-
 
             if (url) {
                 // server URL
@@ -351,7 +284,6 @@ function getCurrentUserId() {
                 dl.removeAttribute('href');
             }
 
-
             previewModal.style.display = 'flex';
         },
         openRenameModal(oldName, onRename) {
@@ -360,20 +292,20 @@ function getCurrentUserId() {
             $('#renameCharCount').textContent = `${oldName.length}/15 karakter`;
             $('#renameCharCount').className = 'char-count';
             $('#renameInput').classList.remove('limit-reached');
-           
+            
             if (oldName.length >= 10 && oldName.length < 15) {
                 $('#renameCharCount').classList.add('warning');
             } else if (oldName.length >= 15) {
                 $('#renameCharCount').classList.add('limit-reached');
                 $('#renameInput').classList.add('limit-reached');
             }
-           
+            
             $('#renameInput').focus();
             $('#renameInput').select();
-           
+            
             const confirmBtn = $('#confirmRename');
             const cancelBtn = $('#cancelRename');
-           
+            
             function confirmHandler() {
                 const newName = $('#renameInput').value.trim();
                 $('#renameModal').style.display = 'none';
@@ -381,16 +313,16 @@ function getCurrentUserId() {
                 cancelBtn.removeEventListener('click', cancelHandler);
                 onRename && onRename(newName);
             }
-           
+            
             function cancelHandler() {
                 $('#renameModal').style.display = 'none';
                 confirmBtn.removeEventListener('click', confirmHandler);
                 cancelBtn.removeEventListener('click', cancelHandler);
             }
-           
+            
             confirmBtn.addEventListener('click', confirmHandler);
             cancelBtn.addEventListener('click', cancelHandler);
-           
+            
             // Enter key support
             $('#renameInput').onkeypress = function(e) {
                 if (e.key === 'Enter') {
@@ -401,8 +333,7 @@ function getCurrentUserId() {
     };
 })();
 
-
-// utilities
+// utilities 
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const r = new FileReader();
@@ -411,7 +342,6 @@ function fileToBase64(file) {
         r.readAsDataURL(file);
     });
 }
-
 
 function dataURLToBlob(dataurl) {
     const arr = dataurl.split(',');
@@ -423,9 +353,6 @@ function dataURLToBlob(dataurl) {
     return new Blob([u8], {type: mime});
 }
 
-
-// Tetap pertahankan localStorage untuk file (sementara)
-// Nanti bisa diganti dengan API backend untuk file
 function getRepoFiles() {
     try { return JSON.parse(localStorage.getItem('repoFiles')||'{}'); } catch { return {}; }
 }
@@ -433,70 +360,58 @@ function saveRepoFiles(obj) {
     localStorage.setItem('repoFiles', JSON.stringify(obj));
 }
 
-
-// Fungsi untuk menyimpan folder ke localStorage (cache)
 function saveFolderList(folders) {
     localStorage.setItem('repositoryFolders', JSON.stringify(folders));
 }
-
-
-// Fungsi untuk mengambil folder dari cache
 function getFolderList() {
     try { return JSON.parse(localStorage.getItem('repositoryFolders')||'[]'); } catch { return []; }
 }
 
-
 // DOM elements
 const grid = document.querySelector('.grid');
 const addBtn = document.getElementById('addBtn');
-
 
 const addFolderModal = document.getElementById('addFolderModal');
 const createFolderBtn = document.getElementById('confirmAddFolder');
 const cancelFolderBtn = document.getElementById('cancelAddFolder');
 const newFolderName = document.getElementById('folderInput');
 
-
 const uploadModal = document.getElementById('uploadModal');
 const fileInput = document.getElementById('fileInput');
 const cancelUpload = document.getElementById('cancelUpload');
 const confirmUpload = document.getElementById('confirmUpload');
-
 
 const filesModal = document.getElementById('filesModal');
 const fileList = document.getElementById('fileList');
 const folderTitle = document.getElementById('folderTitle');
 const closeFilesModal = document.getElementById('closeFilesModal');
 
-
 // ensure essential elements exist
 if (!grid) console.warn("Grid not found");
 if (!filesModal) console.warn("filesModal not found");
-
 
 // Character counter untuk folder name
 function initializeCharacterCounter() {
     const folderInput = document.getElementById('folderInput');
     if (!folderInput) return;
-   
+    
     const charCount = document.createElement('div');
     charCount.className = 'char-count';
     charCount.textContent = '0/15 karakter';
     folderInput.parentNode.insertBefore(charCount, folderInput.nextSibling);
 
-
     // Event listener untuk membatasi input
     folderInput.addEventListener('input', function() {
         const maxLength = 15;
         const currentLength = this.value.length;
-       
+        
         // Update karakter count
         charCount.textContent = `${currentLength}/${maxLength} karakter`;
-       
+        
         // Hapus class sebelumnya
         charCount.classList.remove('warning', 'limit-reached');
         this.classList.remove('limit-reached');
-       
+        
         // Jika mendekati batas (10-14 karakter)
         if (currentLength >= 10 && currentLength < maxLength) {
             charCount.classList.add('warning');
@@ -505,7 +420,7 @@ function initializeCharacterCounter() {
         else if (currentLength >= maxLength) {
             charCount.classList.add('limit-reached');
             this.classList.add('limit-reached');
-           
+            
             // Potong teks jika melebihi batas
             if (currentLength > maxLength) {
                 this.value = this.value.substring(0, maxLength);
@@ -515,29 +430,27 @@ function initializeCharacterCounter() {
         }
     });
 
-
     return charCount;
 }
-
 
 // Character counter untuk rename modal
 function initializeRenameCharacterCounter() {
     const renameInput = document.getElementById('renameInput');
     if (!renameInput) return;
-   
+    
     const charCount = document.getElementById('renameCharCount');
-   
+    
     renameInput.addEventListener('input', function() {
         const maxLength = 15;
         const currentLength = this.value.length;
-       
+        
         // Update karakter count
         charCount.textContent = `${currentLength}/${maxLength} karakter`;
-       
+        
         // Hapus class sebelumnya
         charCount.classList.remove('warning', 'limit-reached');
         this.classList.remove('limit-reached');
-       
+        
         // Jika mendekati batas (10-14 karakter)
         if (currentLength >= 10 && currentLength < maxLength) {
             charCount.classList.add('warning');
@@ -546,7 +459,7 @@ function initializeRenameCharacterCounter() {
         else if (currentLength >= maxLength) {
             charCount.classList.add('limit-reached');
             this.classList.add('limit-reached');
-           
+            
             // Potong teks jika melebihi batas
             if (currentLength > maxLength) {
                 this.value = this.value.substring(0, maxLength);
@@ -557,113 +470,30 @@ function initializeRenameCharacterCounter() {
     });
 }
 
-
-// folder functions - DIUBAH untuk menggunakan API
-async function createFolder(name) {
+// folder functions 
+function createFolder(name) {
     // Validasi panjang nama
     if (name.length > 15) {
         window.repoUI.showToast('Nama folder maksimal 15 karakter');
         return;
     }
 
-    try {
-        const userId = getCurrentUserId();
-        console.log('Creating folder:', { userId, name });
-       
-        const response = await apiCall('/folders', 'POST', {
-            user_id: userId,
-            folder_name: name,
-            color: null
-        });
-
-
-        console.log('Folder creation response:', response);
-       
-        if (response.data) {
-            const folder = response.data;
-            displayFolder(folder);
-           
-            // Update cache lokal
-            const cachedFolders = getFolderList();
-            cachedFolders.push({
-                id: folder.id,
-                name: folder.folder_name,
-                color: folder.color || `color-${(grid.querySelectorAll('.card-wrapper:not(:last-child)').length % 5) + 1}`
-            });
-            saveFolderList(cachedFolders);
-           
-            window.repoUI.showToast('Folder dibuat');
-            return folder;
-        }
-    } catch (error) {
-        console.error('Error creating folder:', error);
-       
-        // Fallback ke localStorage jika API gagal
-        console.log('Using localStorage fallback for folder creation');
-       
-        // Check for duplicates in cache
-        const folders = getFolderList();
-        if (folders.find(f => f.name === name)) {
-            window.repoUI.showToast('Folder sudah ada');
-            return;
-        }
-
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card-wrapper';
-
-
-        const numFolders = grid.querySelectorAll('.card-wrapper:not(:last-child)').length;
-        const colorClass = `color-${(numFolders % 5) + 1}`;
-
-
-        wrapper.innerHTML = `
-            <div class="card ${colorClass}">
-                <p class="folder-name">${escapeHtml(name)}</p>
-                <div class="folder-actions">
-                    <button class="rename-folder" title="Rename Folder">
-                        <i class='bx bx-edit-alt'></i>
-                    </button>
-                    <button class="delete-folder">×</button>
-                </div>
-            </div>
-        `;
-
-
-        const addWrapper = addBtn.closest('.card-wrapper');
-        grid.insertBefore(wrapper, addWrapper);
-
-
-        // attach handlers
-        attachFolderEventHandlers(wrapper, {
-            id: 'local_' + Date.now(),
-            folder_name: name
-        });
-
-
-        // persist to cache
-        folders.push({
-            id: 'local_' + Date.now(),
-            name,
-            color: colorClass
-        });
-        saveFolderList(folders);
-       
-        window.repoUI.showToast('Folder dibuat (offline)');
+    // avoid duplicates
+    const folders = getFolderList();
+    if (folders.find(f => f.name === name)) {
+        window.repoUI.showToast('Folder sudah ada');
+        return;
     }
-}
 
-
-function displayFolder(folder) {
     const wrapper = document.createElement('div');
     wrapper.className = 'card-wrapper';
-    wrapper.dataset.folderId = folder.id;
 
-    const colorClass = folder.color || `color-${(grid.querySelectorAll('.card-wrapper:not(:last-child)').length % 5) + 1}`;
+    const numFolders = grid.querySelectorAll('.card-wrapper:not(:last-child)').length;
+    const colorClass = `color-${(numFolders % 5) + 1}`;
 
     wrapper.innerHTML = `
         <div class="card ${colorClass}">
-            <p class="folder-name">${escapeHtml(folder.folder_name)}</p>
+            <p class="folder-name">${escapeHtml(name)}</p>
             <div class="folder-actions">
                 <button class="rename-folder" title="Rename Folder">
                     <i class='bx bx-edit-alt'></i>
@@ -673,27 +503,24 @@ function displayFolder(folder) {
         </div>
     `;
 
-
     const addWrapper = addBtn.closest('.card-wrapper');
     grid.insertBefore(wrapper, addWrapper);
-
 
     // attach handlers
-    attachFolderEventHandlers(wrapper, folder);
+    attachFolderEventHandlers(wrapper, name);
+
+    // persist
+    folders.push({name, color: colorClass});
+    saveFolderList(folders);
+    window.repoUI.showToast('Folder dibuat');
 }
 
-
-function createFolderFromData(folder) {
+function createFolderFromData(name, colorClass) {
     const wrapper = document.createElement('div');
     wrapper.className = 'card-wrapper';
-    wrapper.dataset.folderId = folder.id || folder.local_id;
-   
-    const colorClass = folder.color || `color-${(grid.querySelectorAll('.card-wrapper:not(:last-child)').length % 5) + 1}`;
-
-
     wrapper.innerHTML = `
         <div class="card ${colorClass}">
-            <p class="folder-name">${escapeHtml(folder.folder_name || folder.name)}</p>
+            <p class="folder-name">${escapeHtml(name)}</p>
             <div class="folder-actions">
                 <button class="rename-folder" title="Rename Folder">
                     <i class='bx bx-edit-alt'></i>
@@ -702,207 +529,104 @@ function createFolderFromData(folder) {
             </div>
         </div>
     `;
-   
     const addWrapper = addBtn.closest('.card-wrapper');
     grid.insertBefore(wrapper, addWrapper);
 
-
-    attachFolderEventHandlers(wrapper, folder);
+    attachFolderEventHandlers(wrapper, name);
 }
 
-
-// Function untuk attach event handlers ke folder - DIUBAH
-function attachFolderEventHandlers(wrapper, folder) {
+// Function untuk attach event handlers ke folder
+function attachFolderEventHandlers(wrapper, folderName) {
     const delBtn = wrapper.querySelector('.delete-folder');
     const renameBtn = wrapper.querySelector('.rename-folder');
     const card = wrapper.querySelector('.card');
 
-
-    delBtn.addEventListener('click', async (e) => {
+    delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        window.repoUI.openConfirm(`Hapus folder "${folder.folder_name || folder.name}"?`, async () => {
-            try {
-                // Jika folder punya ID yang bukan local_, coba hapus dari API
-                if (!folder.id.startsWith('local_')) {
-                    await apiCall(`/folders/${folder.id}`, 'DELETE');
-                }
-               
-                // Hapus dari UI
-                wrapper.style.transform = 'scale(0)';
-                wrapper.style.opacity = '0';
-                setTimeout(() => {
-                    wrapper.remove();
-                   
-                    // Hapus dari cache
-                    const cachedFolders = getFolderList();
-                    const updatedFolders = cachedFolders.filter(f =>
-                        f.id !== folder.id && f.id !== folder.local_id
-                    );
-                    saveFolderList(updatedFolders);
-                   
-                    // Hapus file yang terkait (jika ada di localStorage)
-                    const repoFiles = getRepoFiles();
-                    const folderName = folder.folder_name || folder.name;
-                    if (repoFiles[folderName]) {
-                        delete repoFiles[folderName];
-                        saveRepoFiles(repoFiles);
-                    }
-                   
-                    window.repoUI.showToast('Folder dihapus');
-                }, 300);
-            } catch (error) {
-                console.error('Error deleting folder:', error);
-               
-                // Fallback: hapus dari cache saja
-                wrapper.style.transform = 'scale(0)';
-                wrapper.style.opacity = '0';
-                setTimeout(() => {
-                    wrapper.remove();
-                   
-                    const cachedFolders = getFolderList();
-                    const updatedFolders = cachedFolders.filter(f =>
-                        f.id !== folder.id && f.id !== folder.local_id
-                    );
-                    saveFolderList(updatedFolders);
-                   
-                    const repoFiles = getRepoFiles();
-                    const folderName = folder.folder_name || folder.name;
-                    if (repoFiles[folderName]) {
-                        delete repoFiles[folderName];
-                        saveRepoFiles(repoFiles);
-                    }
-                   
-                    window.repoUI.showToast('Folder dihapus (offline)');
-                }, 300);
-            }
+        window.repoUI.openConfirm(`Hapus folder "${folderName}"?`, () => {
+            deleteFolder(wrapper, folderName);
         });
     });
 
-
     renameBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        renameFolder(wrapper, folder);
+        renameFolder(wrapper, folderName);
     });
 
-
-    card.addEventListener('click', () => openFolder(folder));
+    card.addEventListener('click', () => openFolder(folderName));
 }
 
-
-// Function rename folder - DIUBAH
-async function renameFolder(wrapper, folder) {
-    const oldName = folder.folder_name || folder.name;
-   
-    window.repoUI.openRenameModal(oldName, async (newName) => {
+// Function rename folder
+function renameFolder(wrapper, oldName) {
+    window.repoUI.openRenameModal(oldName, (newName) => {
         if (!newName || newName.trim() === '') {
             window.repoUI.showToast('Nama folder tidak boleh kosong');
             return;
         }
-       
+        
         if (newName.length > 15) {
             window.repoUI.showToast('Nama folder maksimal 15 karakter');
             return;
         }
-       
+        
         if (newName === oldName) {
             window.repoUI.showToast('Nama folder tidak berubah');
             return;
         }
 
-
-        try {
-            // Jika folder punya ID yang bukan local_, coba update via API
-            if (!folder.id.startsWith('local_')) {
-                const response = await apiCall(`/folders/${folder.id}`, 'PUT', {
-                    folder_name: newName,
-                    color: folder.color
-                });
-
-
-                if (response.data) {
-                    folder = response.data;
-                }
-            }
-           
-            // Update folder name in DOM
-            const folderNameElement = wrapper.querySelector('.folder-name');
-            folderNameElement.textContent = newName;
-           
-            // Update wrapper dataset
-            wrapper.dataset.folderId = folder.id;
-           
-            // Update folder object
-            folder.folder_name = newName;
-            folder.name = newName;
-           
-            // Update cache
-            const cachedFolders = getFolderList();
-            const folderIndex = cachedFolders.findIndex(f =>
-                f.id === folder.id || f.id === folder.local_id
-            );
-            if (folderIndex !== -1) {
-                cachedFolders[folderIndex].name = newName;
-                cachedFolders[folderIndex].folder_name = newName;
-                saveFolderList(cachedFolders);
-            }
-
-
-            // Update files in localStorage if any
-            const repoFiles = getRepoFiles();
-            if (repoFiles[oldName]) {
-                repoFiles[newName] = repoFiles[oldName];
-                delete repoFiles[oldName];
-                saveRepoFiles(repoFiles);
-            }
-
-
-            // Re-attach event handlers dengan data folder yang diperbarui
-            attachFolderEventHandlers(wrapper, folder);
-
-
-            window.repoUI.showToast(`Folder diubah menjadi "${newName}"`);
-        } catch (error) {
-            console.error('Error renaming folder:', error);
-           
-            // Fallback: update cache saja
-            const folderNameElement = wrapper.querySelector('.folder-name');
-            folderNameElement.textContent = newName;
-           
-            folder.folder_name = newName;
-            folder.name = newName;
-           
-            const cachedFolders = getFolderList();
-            const folderIndex = cachedFolders.findIndex(f =>
-                f.id === folder.id || f.id === folder.local_id
-            );
-            if (folderIndex !== -1) {
-                cachedFolders[folderIndex].name = newName;
-                saveFolderList(cachedFolders);
-            }
-
-
-            const repoFiles = getRepoFiles();
-            if (repoFiles[oldName]) {
-                repoFiles[newName] = repoFiles[oldName];
-                delete repoFiles[oldName];
-                saveRepoFiles(repoFiles);
-            }
-
-
-            attachFolderEventHandlers(wrapper, folder);
-
-
-            window.repoUI.showToast(`Folder diubah menjadi "${newName}" (offline)`);
+        // Check for duplicate names
+        const folders = getFolderList();
+        if (folders.find(f => f.name === newName && f.name !== oldName)) {
+            window.repoUI.showToast('Folder dengan nama tersebut sudah ada');
+            return;
         }
+
+        // Update folder name in DOM
+        const folderNameElement = wrapper.querySelector('.folder-name');
+        folderNameElement.textContent = newName;
+
+        // Update folder list in localStorage
+        const folderIndex = folders.findIndex(f => f.name === oldName);
+        if (folderIndex !== -1) {
+            folders[folderIndex].name = newName;
+            saveFolderList(folders);
+        }
+
+        // Update files in localStorage if any
+        const repoFiles = getRepoFiles();
+        if (repoFiles[oldName]) {
+            repoFiles[newName] = repoFiles[oldName];
+            delete repoFiles[oldName];
+            saveRepoFiles(repoFiles);
+        }
+
+        // Re-attach event handlers dengan nama baru
+        attachFolderEventHandlers(wrapper, newName);
+
+        window.repoUI.showToast(`Folder diubah menjadi "${newName}"`);
     });
 }
 
+function deleteFolder(wrapper, name) {
+    wrapper.style.transform = 'scale(0)';
+    wrapper.style.opacity = '0';
+    setTimeout(() => {
+        wrapper.remove();
+        // remove files
+        const rf = getRepoFiles();
+        if (rf[name]) { delete rf[name]; saveRepoFiles(rf); }
+        // remove folder list
+        let folders = getFolderList();
+        folders = folders.filter(f => f.name !== name);
+        saveFolderList(folders);
+        window.repoUI.showToast('Folder dihapus');
+    }, 300);
+}
 
 function initializeExistingFolders() {
     $$('.card-wrapper:not(:last-child)').forEach(wrapper => {
         const folderName = wrapper.querySelector('.folder-name').textContent;
-        const folderId = wrapper.dataset.folderId || 'local_' + Date.now();
-       
+        
         // Tambahkan tombol rename jika belum ada
         if (!wrapper.querySelector('.rename-folder')) {
             const deleteBtn = wrapper.querySelector('.delete-folder');
@@ -910,40 +634,34 @@ function initializeExistingFolders() {
                 // Buat container untuk actions
                 const folderActions = document.createElement('div');
                 folderActions.className = 'folder-actions';
-               
+                
                 // Buat tombol rename
                 const renameBtn = document.createElement('button');
                 renameBtn.className = 'rename-folder';
                 renameBtn.title = 'Rename Folder';
                 renameBtn.innerHTML = `<i class='bx bx-edit-alt'></i>`;
-               
+                
                 // Pindahkan delete button ke container
                 deleteBtn.remove();
-               
+                
                 // Tambahkan kedua tombol ke container
                 folderActions.appendChild(renameBtn);
                 folderActions.appendChild(deleteBtn);
-               
+                
                 // Tambahkan container ke card
                 wrapper.querySelector('.card').appendChild(folderActions);
             }
         }
-       
-        attachFolderEventHandlers(wrapper, {
-            id: folderId,
-            name: folderName,
-            folder_name: folderName
-        });
+        
+        attachFolderEventHandlers(wrapper, folderName);
     });
 }
 
-
-// saving files - TETAP menggunakan localStorage untuk sekarang
+// saving files 
 async function saveFilesToFolder(folderName, files) {
     if (!folderName) return;
     const repo = getRepoFiles();
     if (!repo[folderName]) repo[folderName] = [];
-
 
     for (const file of files) {
         // size check: skip extremely big files and show toast
@@ -967,23 +685,18 @@ async function saveFilesToFolder(folderName, files) {
         }
     }
 
-
     saveRepoFiles(repo);
 }
 
-
-// Open folder - DIUBAH
+// Open folder
 let currentOpenedFolder = null;
 
-
-function openFolder(folder) {
-    currentOpenedFolder = folder;
-
+function openFolder(name) {
+    currentOpenedFolder = name;
 
     // Hapus konten modal yang lama
     const modalContent = filesModal.querySelector('.modal-content');
     modalContent.innerHTML = '';
-
 
     // Buat header yang simple di tengah
     const headerDiv = document.createElement('div');
@@ -992,9 +705,8 @@ function openFolder(folder) {
     headerDiv.style.paddingBottom = '15px';
     headerDiv.style.borderBottom = '2px solid #f0f0f0';
 
-
     const title = document.createElement('h3');
-    title.textContent = folder.folder_name || folder.name;
+    title.textContent = name;
     title.style.fontSize = '24px';
     title.style.fontWeight = '700';
     title.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
@@ -1002,11 +714,9 @@ function openFolder(folder) {
     title.style.webkitTextFillColor = 'transparent';
     title.style.marginBottom = '8px';
 
-
     // Container untuk tombol tambah file
     const buttonContainer = document.createElement('div');
     buttonContainer.style.marginTop = '15px';
-
 
     const addButton = document.createElement('button');
     addButton.innerHTML = '<i class="fas fa-plus"></i> Tambah File';
@@ -1020,24 +730,20 @@ function openFolder(folder) {
     addButton.style.fontWeight = '600';
     addButton.style.transition = 'all 0.3s ease';
 
-
     addButton.addEventListener('mouseenter', () => {
         addButton.style.background = '#5a6fd8';
         addButton.style.transform = 'translateY(-2px)';
     });
-
 
     addButton.addEventListener('mouseleave', () => {
         addButton.style.background = 'var(--primary-color)';
         addButton.style.transform = 'translateY(0)';
     });
 
-
     addButton.addEventListener('click', () => {
         fileInput.value = '';
         fileInput.click();
     });
-
 
     // Buat ul untuk file list
     const fileListEl = document.createElement('ul');
@@ -1046,7 +752,6 @@ function openFolder(folder) {
     fileListEl.style.maxHeight = '400px';
     fileListEl.style.overflowY = 'auto';
     fileListEl.style.marginTop = '20px';
-
 
     // Tombol tutup
     const closeButton = document.createElement('button');
@@ -1062,52 +767,44 @@ function openFolder(folder) {
     closeButton.style.marginTop = '20px';
     closeButton.style.transition = 'all 0.3s ease';
 
-
     closeButton.addEventListener('mouseenter', () => {
         closeButton.style.background = '#bbb';
     });
-
 
     closeButton.addEventListener('mouseleave', () => {
         closeButton.style.background = '#ddd';
     });
 
-
     closeButton.addEventListener('click', () => {
         filesModal.style.display = 'none';
     });
 
-
     // Susun elemen-elemen
     headerDiv.appendChild(title); // HANYA title saja, subtitle dihapus
     buttonContainer.appendChild(addButton);
-   
+    
     modalContent.appendChild(headerDiv);
     modalContent.appendChild(buttonContainer);
     modalContent.appendChild(fileListEl);
     modalContent.appendChild(closeButton);
 
-
-    renderFilesInModal(folder);
+    renderFilesInModal(name);
     filesModal.style.display = 'flex';
 }
 
-
-//render files - TETAP menggunakan localStorage untuk file
-function renderFilesInModal(folder) {
-    const folderName = folder.folder_name || folder.name;
+//render files
+function renderFilesInModal(folderName) {
     const repo = getRepoFiles();
     const files = repo[folderName] || [];
     const fileListEl = document.getElementById('fileList');
     fileListEl.innerHTML = '';
 
-
     if (!files.length) {
         fileListEl.innerHTML = `
             <li style='
-                color: #666;
-                padding: 20px;
-                text-align: center;
+                color: #666; 
+                padding: 20px; 
+                text-align: center; 
                 font-style: italic;
                 list-style: none;
             '>
@@ -1116,20 +813,17 @@ function renderFilesInModal(folder) {
         return;
     }
 
-
     files.forEach(file => {
         const li = document.createElement('li');
         li.style.padding = '12px 8px';
         li.style.listStyle = 'none';
         li.style.borderBottom = '1px solid #f0f0f0';
 
-
         const cont = document.createElement('div');
         cont.style.display = 'flex';
         cont.style.justifyContent = 'space-between';
         cont.style.alignItems = 'center';
         cont.style.gap = '15px';
-
 
         const left = document.createElement('div');
         left.style.flex = '1';
@@ -1138,11 +832,9 @@ function renderFilesInModal(folder) {
             <div style="font-size:12px;color:#666; margin-top:4px;">${file.uploadedAt}</div>
         `;
 
-
         const right = document.createElement('div');
         right.style.display = 'flex';
         right.style.gap = '8px';
-
 
         const viewBtn = document.createElement('button');
         viewBtn.textContent = 'Lihat';
@@ -1156,23 +848,19 @@ function renderFilesInModal(folder) {
         viewBtn.style.fontWeight = '600';
         viewBtn.style.transition = 'all 0.3s ease';
 
-
         viewBtn.addEventListener('mouseenter', () => {
             viewBtn.style.background = '#5a6fd8';
             viewBtn.style.transform = 'translateY(-1px)';
         });
-
 
         viewBtn.addEventListener('mouseleave', () => {
             viewBtn.style.background = 'var(--primary-color)';
             viewBtn.style.transform = 'translateY(0)';
         });
 
-
         viewBtn.addEventListener('click', () => {
             window.repoUI.openPreview({name: file.name, mime: file.type, dataUrl: file.dataUrl});
         });
-
 
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Hapus';
@@ -1186,25 +874,21 @@ function renderFilesInModal(folder) {
         delBtn.style.fontWeight = '600';
         delBtn.style.transition = 'all 0.3s ease';
 
-
         delBtn.addEventListener('mouseenter', () => {
             delBtn.style.background = '#ff5252';
             delBtn.style.transform = 'translateY(-1px)';
         });
-
 
         delBtn.addEventListener('mouseleave', () => {
             delBtn.style.background = '#ff6b6b';
             delBtn.style.transform = 'translateY(0)';
         });
 
-
         delBtn.addEventListener('click', () => {
             window.repoUI.openConfirm(`Hapus file "${file.name}"?`, () => {
                 deleteFileFromFolder(folderName, file.id);
             });
         });
-
 
         right.appendChild(viewBtn);
         right.appendChild(delBtn);
@@ -1215,19 +899,17 @@ function renderFilesInModal(folder) {
     });
 }
 
-
-// delete file - TETAP menggunakan localStorage
+// delete file 
 function deleteFileFromFolder(folderName, fileId) {
     const repo = getRepoFiles();
     if (!repo[folderName]) return;
     repo[folderName] = repo[folderName].filter(f => f.id !== fileId);
     saveRepoFiles(repo);
-    renderFilesInModal(currentOpenedFolder);
+    renderFilesInModal(folderName);
     window.repoUI.showToast('File dihapus');
 }
 
-
-// hook file input
+// hook file input 
 if (fileInput) {
     fileInput.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files || []);
@@ -1237,14 +919,13 @@ if (fileInput) {
             fileInput.value = '';
             return;
         }
-        await saveFilesToFolder(currentOpenedFolder.folder_name || currentOpenedFolder.name, files);
+        await saveFilesToFolder(currentOpenedFolder, files);
         renderFilesInModal(currentOpenedFolder);
         if (uploadModal) uploadModal.style.display = 'none';
         fileInput.value = '';
         window.repoUI.showToast('File ditambahkan');
     });
 }
-
 
 // add-folder button wiring
 if (addBtn) {
@@ -1253,7 +934,7 @@ if (addBtn) {
             addFolderModal.style.display = 'flex';
             newFolderName.value = '';
             newFolderName.focus();
-           
+            
             // Reset counter
             const charCount = document.querySelector('.char-count');
             if (charCount) {
@@ -1276,7 +957,6 @@ if (addBtn) {
     });
 }
 
-
 // Initialize character counters
 let charCountElement = null;
 document.addEventListener('DOMContentLoaded', function() {
@@ -1284,13 +964,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeRenameCharacterCounter();
 });
 
-
 // modal add folder buttons
 if (cancelFolderBtn) {
-    cancelFolderBtn.addEventListener('click', () => {
+    cancelFolderBtn.addEventListener('click', () => { 
         if (addFolderModal) {
             addFolderModal.style.display='none';
-           
+            
             // Reset counter
             if (charCountElement) {
                 charCountElement.textContent = '0/15 karakter';
@@ -1301,16 +980,15 @@ if (cancelFolderBtn) {
     });
 }
 
-
 if (createFolderBtn) {
-    createFolderBtn.addEventListener('click', async () => {
+    createFolderBtn.addEventListener('click', () => {
         const name = (newFolderName.value||'').trim();
-       
-        if (!name) {
-            window.repoUI.showToast('Nama folder tidak boleh kosong');
-            return;
+        
+        if (!name) { 
+            window.repoUI.showToast('Nama folder tidak boleh kosong'); 
+            return; 
         }
-       
+        
         if (name.length > 15) {
             window.repoUI.showToast('Nama folder maksimal 15 karakter');
             newFolderName.classList.add('limit-reached');
@@ -1319,10 +997,10 @@ if (createFolderBtn) {
             }
             return;
         }
-       
-        await createFolder(name);
+        
+        createFolder(name);
         if (addFolderModal) addFolderModal.style.display='none';
-       
+        
         // Reset counter
         if (charCountElement) {
             charCountElement.textContent = '0/15 karakter';
@@ -1332,15 +1010,13 @@ if (createFolderBtn) {
     });
 }
 
-
 // upload modal cancel
 if (cancelUpload) {
-    cancelUpload.addEventListener('click', () => {
-        if (uploadModal) uploadModal.style.display='none';
-        if (fileInput) fileInput.value = '';
+    cancelUpload.addEventListener('click', () => { 
+        if (uploadModal) uploadModal.style.display='none'; 
+        if (fileInput) fileInput.value = ''; 
     });
 }
-
 
 // confirmUpload (if used)
 if (confirmUpload) {
@@ -1348,14 +1024,13 @@ if (confirmUpload) {
         const files = Array.from(fileInput.files || []);
         if (!files.length) { window.repoUI.showToast('Pilih file dulu'); return; }
         if (!currentOpenedFolder) { window.repoUI.showToast('Pilih folder dulu'); return; }
-        await saveFilesToFolder(currentOpenedFolder.folder_name || currentOpenedFolder.name, files);
+        await saveFilesToFolder(currentOpenedFolder, files);
         if (uploadModal) uploadModal.style.display='none';
         fileInput.value = '';
         renderFilesInModal(currentOpenedFolder);
         window.repoUI.showToast('File diunggah');
     });
 }
-
 
 // click outside to close for existing modals
 window.addEventListener('click', (e) => {
@@ -1373,84 +1048,23 @@ window.addEventListener('click', (e) => {
     if (e.target === $('#renameModal')) $('#renameModal').style.display = 'none';
 });
 
-
 // -------------------- escape html --------------------
 function escapeHtml(s) {
     if (!s) return '';
     return s.replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-
-// Load folders dari backend saat halaman dimuat
-async function loadFoldersFromBackend() {
-    try {
-        const userId = getCurrentUserId();
-        console.log('Loading folders for user:', userId);
-       
-        const response = await apiCall(`/folders/user/${userId}`);
-        console.log('Folders response:', response);
-       
-        if (Array.isArray(response)) {
-            // Simpan ke cache
-            const foldersForCache = response.map(folder => ({
-                id: folder.id,
-                name: folder.folder_name,
-                folder_name: folder.folder_name,
-                color: folder.color
-            }));
-            saveFolderList(foldersForCache);
-           
-            // Tampilkan folder
-            const addWrapper = addBtn.closest('.card-wrapper');
-           
-            // Hapus folder yang ada (kecuali tombol tambah)
-            $$('.card-wrapper:not(:last-child)').forEach(w => w.remove());
-           
-            // Tampilkan folder dari backend
-            response.forEach(folder => createFolderFromData(folder));
-           
-            return response;
-        }
-        return [];
-    } catch (error) {
-        console.error('Error loading folders from backend:', error);
-       
-        // Fallback ke cache lokal
-        const cachedFolders = getFolderList();
-        if (cachedFolders.length > 0) {
-            console.log('Using cached folders:', cachedFolders);
-           
-            const addWrapper = addBtn.closest('.card-wrapper');
-            $$('.card-wrapper:not(:last-child)').forEach(w => w.remove());
-           
-            cachedFolders.forEach(folder => createFolderFromData(folder));
-           
-            window.repoUI.showToast('Menggunakan data offline');
-        }
-       
-        return [];
-    }
-}
-
-
-// init (load folders & attach handlers)
+// init (load folders & attach handlers) 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize existing folders di DOM (jika ada dari HTML)
     initializeExistingFolders();
-   
-    // Load folders dari backend
-    await loadFoldersFromBackend();
-   
-    // Tambahkan folder dari cache jika masih ada yang belum ditampilkan
-    const cachedFolders = getFolderList();
-    const displayedFolderIds = $$('.card-wrapper:not(:last-child)').map(w => w.dataset.folderId);
-   
-    cachedFolders.forEach(folder => {
-        if (!displayedFolderIds.includes(folder.id) && !displayedFolderIds.includes(folder.local_id)) {
-            createFolderFromData(folder);
-        }
-    });
 
+    // load saved folders
+    const saved = getFolderList();
+    if (saved && saved.length) {
+        // remove default existing cards and re-create from saved (to avoid duplicates)
+        $$('.card-wrapper:not(:last-child)').forEach(w => w.remove());
+        saved.forEach(f => createFolderFromData(f.name, f.color));
+    }
 
     // small animation for cards (optional)
     $$('.card-wrapper').forEach((wrapper, i) => {
@@ -1463,7 +1077,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, i*80);
     });
 
-
     // Preload demo file into folder "Satu" if available and not already present
     if (demoFileUrl) {
         try {
@@ -1473,16 +1086,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const filename = demoFileUrl.split('/').pop();
                 const fileObj = new File([blob], filename, { type: blob.type || 'image/jpeg' });
                 const folders = getFolderList();
-               
-                // Cari atau buat folder "Satu"
-                let satuFolder = folders.find(f => f.name === 'Satu');
-                if (!satuFolder) {
-                    // Buat folder "Satu" di backend
-                    await createFolder('Satu');
-                    // Reload folders
-                    await loadFoldersFromBackend();
-                }
-               
+                if (!folders.find(f => f.name === 'Satu')) createFolder('Satu');
                 const repo = getRepoFiles();
                 if (!repo['Satu'] || !repo['Satu'].find(x => x.name === filename)) {
                     await saveFilesToFolder('Satu', [fileObj]);
@@ -1495,4 +1099,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
-
