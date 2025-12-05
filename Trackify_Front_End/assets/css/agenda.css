@@ -510,7 +510,7 @@ body {
     color: var(--primary-color);
 }
 
-/* Search Section - PERBAIKAN UTAMA */
+/* Search Section */
 .search-section {
     margin: 15px 0;
 }
@@ -664,44 +664,11 @@ body {
     border-color: var(--primary-color);
 }
 
-/* Todo List */
-.todo-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-height: 400px;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-}
+/* =============================================== */
+/* ICON STYLES - TAMBAHAN UNTUK PERBAIKAN ICON */
+/* =============================================== */
 
-.todo-item {
-    background: var(--bg-color);
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-    cursor: pointer;
-    position: relative;
-}
-
-.todo-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.todo-item.completed {
-    background: rgba(158, 198, 243, 0.1);
-    opacity: 0.8;
-}
-
-.todo-item.overdue {
-    border-left-color: var(--danger-color);
-}
-
+/* Icon dalam todo item */
 .todo-checkbox {
     width: 24px;
     height: 24px;
@@ -715,15 +682,259 @@ body {
     flex-shrink: 0;
 }
 
+.todo-checkbox i {
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
 .todo-checkbox.checked {
     background: linear-gradient(135deg, var(--primary-color), #667eea);
     border-color: transparent;
 }
 
-.todo-checkbox.checked::after {
-    content: '✓';
+.todo-checkbox.checked i {
     color: white;
-    font-size: 14px;
+    transform: scale(1.2);
+}
+
+.todo-checkbox.in-progress {
+    border-color: #2196F3;
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.todo-checkbox.in-progress i {
+    color: #2196F3;
+}
+
+.todo-checkbox.todo {
+    border-color: #ddd;
+    background: rgba(221, 221, 221, 0.1);
+}
+
+.todo-checkbox.todo i {
+    color: #999;
+}
+
+/* Animasi untuk checkbox in-progress */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.todo-checkbox.in-progress {
+    animation: pulse 2s infinite;
+}
+
+/* Badge priority */
+.priority-badge {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 18px;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* Todo chip dengan icon */
+.todo-chip i {
+    margin-right: 4px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.todo-chip.completed {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #155724;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.todo-chip.completed i {
+    color: #4CAF50;
+}
+
+.todo-chip.in_progress {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: #004085;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.todo-chip.in_progress i {
+    color: #2196F3;
+}
+
+.todo-chip.todo {
+    background-color: rgba(158, 158, 158, 0.15);
+    color: #6c757d;
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.todo-chip.todo i {
+    color: #999;
+}
+
+.todo-chip.overdue-chip {
+    background-color: rgba(255, 107, 107, 0.15);
+    color: #721c24;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    animation: blink 1s infinite;
+}
+
+.todo-chip.overdue-chip i {
+    color: #ff6b6b;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Priority chips */
+.todo-chip.priority-high {
+    background-color: rgba(255, 107, 107, 0.15);
+    color: #721c24;
+    font-weight: 600;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.todo-chip.priority-high i {
+    color: #ff6b6b;
+}
+
+.todo-chip.priority-low {
+    background-color: rgba(102, 187, 106, 0.15);
+    color: #155724;
+    border: 1px solid rgba(102, 187, 106, 0.3);
+}
+
+.todo-chip.priority-low i {
+    color: #66bb6a;
+}
+
+/* Action buttons - DIPERBAIKI */
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.action-btn i {
+    font-size: 16px;
+}
+
+.action-btn:hover {
+    background: #e9ecef;
+    transform: scale(1.1);
+}
+
+.complete-btn {
+    background: var(--success-color);
+    color: white;
+}
+
+.complete-btn:hover {
+    background: #45a049;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Status button khusus */
+.status-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.status-btn i {
+    font-size: 16px;
+}
+
+.status-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Loading animation */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #666;
+}
+
+.loading:after {
+    content: ' .';
+    animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ' .'; }
+    40% { content: ' ..'; }
+    60% { content: ' ...'; }
+    80%, 100% { content: ''; }
+}
+
+/* =============================================== */
+/* TAMBAHAN UNTUK TODO ITEM YANG DIPERBAIKI */
+/* =============================================== */
+
+.todo-item {
+    background: var(--bg-color);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    position: relative;
+}
+
+.todo-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.todo-item.completed {
+    background: rgba(158, 198, 243, 0.1);
+    opacity: 0.9;
+}
+
+.todo-item.overdue {
+    border-left-color: var(--danger-color);
+}
+
+.todo-item.completed .todo-checkbox {
+    background: linear-gradient(135deg, var(--primary-color), #667eea);
+    border-color: transparent;
+}
+
+.todo-item.completed .todo-checkbox i {
+    color: white;
 }
 
 .todo-content {
@@ -732,14 +943,25 @@ body {
 }
 
 .todo-title {
-    font-weight: 500;
-    margin-bottom: 5px;
+    font-weight: 600;
+    margin-bottom: 8px;
     word-wrap: break-word;
+    color: var(--text-color);
+    font-size: 1rem;
 }
 
 .todo-item.completed .todo-title {
     text-decoration: line-through;
     color: #666;
+    opacity: 0.8;
+}
+
+.todo-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    word-wrap: break-word;
 }
 
 .todo-meta {
@@ -747,20 +969,25 @@ body {
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
+    margin-top: 8px;
 }
 
 .todo-chip {
-    background: rgba(158, 198, 243, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 16px;
     font-size: 0.8rem;
-    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .todo-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
+    margin-top: 5px;
 }
 
 .delete-btn {
@@ -801,7 +1028,13 @@ body {
     box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
 }
 
-/* Edit Modal Styles - PERBAIKAN UTAMA */
+/* TAMBAHAN: Status button group dalam todo actions */
+.todo-actions .status-btn {
+    width: 32px;
+    height: 32px;
+}
+
+/* Edit Modal Styles - DIPERBAIKI */
 .edit-modal {
     position: fixed;
     top: 50%;
@@ -834,8 +1067,25 @@ body {
     }
 }
 
+.edit-modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 20px 20px 0 0;
+}
+
+.edit-modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
 .edit-form {
     padding: 30px;
+    overflow-y: auto;
 }
 
 .form-group {
@@ -850,17 +1100,25 @@ body {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
     background: var(--bg-color);
     transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
@@ -874,7 +1132,54 @@ body {
     border-top: 1px solid var(--border-color);
 }
 
-/* Inline Edit Styles */
+/* TAMBAHAN: Style untuk date-chip khusus */
+.todo-chip.date-chip {
+    background: rgba(158, 198, 243, 0.2);
+    color: var(--text-color);
+    border: 1px solid rgba(158, 198, 243, 0.3);
+}
+
+.todo-chip.date-chip i {
+    color: var(--primary-color);
+}
+
+/* TAMBAHAN: Style untuk category-chip */
+.todo-chip.category-chip {
+    background: rgba(221, 123, 223, 0.15);
+    color: var(--text-color);
+    border: 1px solid rgba(221, 123, 223, 0.3);
+}
+
+.todo-chip.category-chip i {
+    color: var(--accent-color);
+}
+
+/* TAMBAHAN: Style untuk chips dalam task popup */
+.task-popup-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    background: rgba(158, 198, 243, 0.2);
+    color: var(--text-color);
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.task-popup-chip i {
+    font-size: 12px;
+}
+
+/* TAMBAHAN: Style untuk status button dalam task popup */
+.tasks-popup .status-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+}
+
+/* Inline Edit Styles - DIPERBAIKI */
 .todo-item.editing {
     border: 2px solid var(--primary-color);
     background: rgba(158, 198, 243, 0.1) !important;
@@ -990,16 +1295,19 @@ body {
 .reward-content .reward-icon {
     font-size: 3rem;
     margin-bottom: 15px;
+    color: var(--primary-color);
 }
 
 .reward-content h3 {
     margin-bottom: 10px;
     color: var(--text-color);
+    font-size: 1.5rem;
 }
 
 .reward-content p {
     color: #666;
     margin-bottom: 20px;
+    line-height: 1.5;
 }
 
 .reward-content .primary-btn {
@@ -1096,6 +1404,12 @@ body {
     padding: 20px;
     border-radius: 12px;
     text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-number {
@@ -1108,6 +1422,7 @@ body {
 .stat-label {
     font-size: 0.9rem;
     color: #666;
+    font-weight: 500;
 }
 
 /* Tasks Filters */
@@ -1125,6 +1440,12 @@ body {
     background: var(--bg-color);
     flex: 1;
     min-width: 150px;
+    transition: all 0.3s ease;
+}
+
+.tasks-filters select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 /* Tasks List */
@@ -1138,6 +1459,7 @@ body {
     background: rgba(158, 198, 243, 0.05);
     border-radius: 12px;
     padding: 20px;
+    border: 1px solid rgba(158, 198, 243, 0.2);
 }
 
 .tasks-group-header {
@@ -1147,6 +1469,13 @@ body {
     padding-bottom: 10px;
     border-bottom: 2px solid var(--border-color);
     color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tasks-group-header i {
+    color: var(--primary-color);
 }
 
 .task-popup-item {
@@ -1156,9 +1485,10 @@ body {
     margin-bottom: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 15px;
     transition: all 0.3s ease;
+    border-left: 4px solid transparent;
 }
 
 .task-popup-item:hover {
@@ -1168,6 +1498,11 @@ body {
 
 .task-popup-item.completed {
     background: rgba(158, 198, 243, 0.1);
+    border-left-color: var(--success-color);
+}
+
+.task-popup-item.overdue {
+    border-left-color: var(--danger-color);
 }
 
 .task-popup-checkbox {
@@ -1181,6 +1516,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    margin-top: 3px;
 }
 
 .task-popup-checkbox.checked {
@@ -1196,25 +1532,32 @@ body {
 
 .task-popup-content {
     flex: 1;
+    min-width: 0;
 }
 
 .task-popup-title {
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.task-popup-item.completed .task-popup-title {
+    text-decoration: line-through;
+    color: #666;
+}
+
+.task-popup-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    line-height: 1.4;
 }
 
 .task-popup-meta {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-}
-
-.task-popup-chip {
-    background: rgba(158, 198, 243, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    color: var(--text-color);
+    align-items: center;
 }
 
 .no-tasks {
@@ -1223,7 +1566,14 @@ body {
     color: #666;
 }
 
-/* Reminder Notification - PERBAIKAN UTAMA */
+.no-tasks i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+    color: #ccc;
+}
+
+/* Reminder Notification */
 .reminder-notification {
     position: fixed;
     top: 120px;
@@ -1239,6 +1589,7 @@ body {
     gap: 15px;
     max-width: 400px;
     animation: slideInRight 0.3s ease;
+    border-left: 5px solid var(--danger-color);
 }
 
 .reminder-notification.show {
@@ -1259,6 +1610,7 @@ body {
 .reminder-icon {
     font-size: 1.5rem;
     flex-shrink: 0;
+    color: var(--danger-color);
 }
 
 .reminder-content {
@@ -1268,6 +1620,7 @@ body {
 .reminder-title {
     font-weight: 600;
     margin-bottom: 5px;
+    color: #721c24;
 }
 
 .reminder-message {
@@ -1322,12 +1675,28 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    border-left: 5px solid rgba(255, 255, 255, 0.3);
 }
 
-.notification.success { background: #4CAF50; }
-.notification.error { background: #ff6b6b; }
-.notification.info { background: #2196F3; }
-.notification.warning { background: #ffa726; }
+.notification.success { 
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+    border-left-color: #43e97b;
+}
+
+.notification.error { 
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    border-left-color: #ff6b6b;
+}
+
+.notification.info { 
+    background: linear-gradient(135deg, #2196F3, #21cbf3);
+    border-left-color: #2196F3;
+}
+
+.notification.warning { 
+    background: linear-gradient(135deg, #ffa726, #ffcc80);
+    border-left-color: #ffa726;
+}
 
 .notification-content {
     display: flex;
@@ -1335,9 +1704,76 @@ body {
     gap: 10px;
 }
 
+.notification-content i {
+    font-size: 1.2rem;
+}
+
 @keyframes slideOutRight {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(100%); opacity: 0; }
+}
+
+/* TAMBAHAN: Empty state untuk todo list */
+.todo-list:empty::before {
+    content: '📝 Tidak ada tugas untuk tanggal ini';
+    display: block;
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 1rem;
+}
+
+.todo-list:empty::after {
+    content: 'Tambahkan tugas baru menggunakan form di atas';
+    display: block;
+    text-align: center;
+    padding: 0 20px 30px;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* TAMBAHAN: Scrollbar styling */
+.todo-list::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+.edit-form::-webkit-scrollbar {
+    width: 6px;
+}
+
+.todo-list::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track,
+.edit-form::-webkit-scrollbar-track {
+    background: rgba(158, 198, 243, 0.1);
+    border-radius: 3px;
+}
+
+.todo-list::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb,
+.edit-form::-webkit-scrollbar-thumb {
+    background: rgba(158, 198, 243, 0.5);
+    border-radius: 3px;
+}
+
+.todo-list::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover,
+.edit-form::-webkit-scrollbar-thumb:hover {
+    background: rgba(158, 198, 243, 0.8);
+}
+
+/* TAMBAHAN: Task counter badge di calendar */
+.day .task-count {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--accent-color);
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
 }
 
 /* Responsive Design */
@@ -1404,6 +1840,16 @@ body {
     .edit-actions {
         flex-direction: column;
     }
+    
+    .todo-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    
+    .todo-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1438,11 +1884,27 @@ body {
     }
     
     .todo-actions {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
     }
     
     .edit-input {
         font-size: 16px;
+    }
+    
+    .todo-chip {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .action-btn i {
+        font-size: 14px;
     }
 }
 
@@ -1468,4 +1930,51 @@ body {
     animation: fadeInUp 0.6s ease forwards;
     animation-delay: 0.2s;
     opacity: 0;
+}
+
+/* TAMBAHAN: Animasi untuk todo item saat ditambahkan */
+@keyframes slideInTodo {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.todo-item {
+    animation: slideInTodo 0.3s ease forwards;
+}
+
+/* TAMBAHAN: Animasi untuk checkbox saat diklik */
+@keyframes checkboxClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.todo-checkbox:active {
+    animation: checkboxClick 0.3s ease;
+}
+
+/* TAMBAHAN: Style untuk validation error */
+.error-message {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.error-message i {
+    font-size: 0.9rem;
+}
+
+/* TAMBAHAN: Style untuk required fields */
+.required::after {
+    content: ' *';
+    color: var(--danger-color);
 }

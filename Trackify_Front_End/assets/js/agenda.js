@@ -43,9 +43,10 @@ document.addEventListener('keydown', function(event) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    // State & Konfigurasi
-    const STORAGE_KEY = 'trackify_todos_v8';
-    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    // Konfigurasi API
+    const API_BASE_URL = 'http://localhost:5000/api'; // Port 5000
+    let todos = [];
+    let selectedDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
     
     // DOM Elements
     const monthYear = document.getElementById('monthYear');
@@ -97,6 +98,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const editPriority = document.getElementById('editPriority');
     const editCategory = document.getElementById('editCategory');
     const editCancel = document.getElementById('editCancel');
+    const editDescription = document.getElementById('editDescription');
+    const editStatus = document.getElementById('editStatus');
     
     // Reminder Elements
     const reminderNotification = document.getElementById('reminderNotification');
@@ -112,7 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    let selectedDate = urlParams.get('date') || toISO(today);
+    if (urlParams.get('date')) {
+        selectedDate = urlParams.get('date');
+    }
     let currentDate = new Date();
 
     // Priority mapping
@@ -132,12 +137,168 @@ document.addEventListener('DOMContentLoaded', function() {
         'lainnya': 'Lainnya'
     };
 
+    // Status mapping
+    const statusLabels = {
+        'todo': 'Belum Mulai',
+        'in_progress': 'Sedang Dikerjakan',
+        'completed': 'Selesai'
+    };
+
+    // API Service - DIPERBAIKI
+    class ApiService {
+        constructor() {
+            this.baseUrl = API_BASE_URL;
+            this.token = localStorage.getItem('token');
+            console.log('🔧 API Service initialized with token:', this.token ? 'Yes' : 'No');
+        }
+
+        setToken(token) {
+            this.token = token;
+            localStorage.setItem('token', token);
+            console.log('🔑 Token set:', this.token ? 'Yes' : 'No');
+        }
+
+        async request(endpoint, options = {}) {
+            const url = `${this.baseUrl}${endpoint}`;
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            if (this.token) {
+                headers['Authorization'] = `Bearer ${this.token}`;
+            }
+
+            const config = {
+                ...options,
+                headers
+            };
+
+            console.log(`📤 API Request: ${url}`, config);
+
+            try {
+                const response = await fetch(url, config);
+                
+                console.log(`📥 API Response: ${response.status} ${response.statusText}`);
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                    return null;
+                }
+
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        // Tidak bisa parse JSON
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    console.log('📦 API Response data:', data);
+                    return data;
+                } else {
+                    console.log('📦 API Response: Non-JSON response');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ API Request Error:', error);
+                throw error;
+            }
+        }
+
+        // Task endpoints - DIPERBAIKI
+        async getTasks() {
+            console.log('📋 Getting all tasks...');
+            return this.request('/tasks');
+        }
+
+        async getTasksByDate(date) {
+            console.log('📅 Getting tasks for date:', date);
+            // Validasi format tanggal
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                console.error('❌ Invalid date format in getTasksByDate:', date);
+                throw new Error('Format tanggal harus YYYY-MM-DD');
+            }
+            return this.request(`/tasks/date/${date}`);
+        }
+
+        async getTaskStats() {
+            console.log('📊 Getting task stats...');
+            return this.request('/tasks/stats');
+        }
+
+        async createTask(taskData) {
+            console.log('➕ Creating task with data:', taskData);
+            
+            // PASTIKAN dueDate dalam format YYYY-MM-DD
+            const formattedTaskData = {
+                ...taskData,
+                dueDate: taskData.dueDate // Jangan diubah formatnya!
+            };
+            
+            console.log('📤 Sending to backend:', formattedTaskData);
+            
+            return this.request('/tasks', {
+                method: 'POST',
+                body: JSON.stringify(formattedTaskData)
+            });
+        }
+
+        async updateTask(id, taskData) {
+            console.log('✏️ Updating task', id, 'with data:', taskData);
+            return this.request(`/tasks/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(taskData)
+            });
+        }
+
+        async updateTaskStatus(id, status) {
+            console.log('🔄 Updating task status', id, 'to:', status);
+            return this.request(`/tasks/${id}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+        }
+
+        async deleteTask(id) {
+            console.log('🗑️ Deleting task:', id);
+            return this.request(`/tasks/${id}`, {
+                method: 'DELETE'
+            });
+        }
+
+        async searchTasks(query) {
+            console.log('🔍 Searching tasks:', query);
+            return this.request(`/tasks/search?q=${encodeURIComponent(query)}`);
+        }
+
+        async filterTasks(filters) {
+            console.log('🎛️ Filtering tasks:', filters);
+            const cleanFilters = {};
+            Object.keys(filters).forEach(key => {
+                if (filters[key] !== undefined && filters[key] !== '' && filters[key] !== null) {
+                    cleanFilters[key] = filters[key];
+                }
+            });
+            
+            const queryParams = new URLSearchParams(cleanFilters).toString();
+            return this.request(`/tasks/filter?${queryParams}`);
+        }
+    }
+
+    const apiService = new ApiService();
+
     // Notification Manager
     class NotificationManager {
         constructor() {
-            this.notifications = [];
-            this.isShowingReminder = false;
-            this.messageQueue = [];
             this.setupStyles();
         }
 
@@ -184,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         showMessage(message, type = 'info', duration = 3000) {
-            // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
@@ -196,7 +356,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.body.appendChild(notification);
 
-            // Auto remove
             setTimeout(() => {
                 notification.style.animation = 'slideOutRight 0.3s ease';
                 setTimeout(() => {
@@ -225,310 +384,465 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            this.isShowingReminder = true;
-            reminderBadge.textContent = totalReminders;
-
-            if (urgentTasks.length > 0) {
-                const urgentTask = urgentTasks[0];
-                reminderTitle.textContent = '⏰ Pengingat Deadline!';
-                reminderMessage.textContent = `"${urgentTask.text}" deadline besok!`;
+            if (reminderBadge) {
+                reminderBadge.textContent = totalReminders;
             }
 
-            reminderNotification.classList.add('show');
+            if (urgentTasks.length > 0 && reminderTitle && reminderMessage) {
+                const urgentTask = urgentTasks[0];
+                reminderTitle.textContent = '⏰ Pengingat Deadline!';
+                reminderMessage.textContent = `"${urgentTask.title}" deadline besok!`;
+            }
 
-            // Auto hide setelah 10 detik
+            if (reminderNotification) {
+                reminderNotification.classList.add('show');
+            }
+
             setTimeout(() => {
                 this.hideReminder();
             }, 10000);
         }
 
         hideReminder() {
-            this.isShowingReminder = false;
-            reminderNotification.classList.remove('show');
+            if (reminderNotification) {
+                reminderNotification.classList.remove('show');
+            }
         }
     }
 
     const notificationManager = new NotificationManager();
 
-    // Initialize App
-    function initializeApp() {
-        // Show loading
+    // Initialize App - DIPERBAIKI
+    async function initializeApp() {
+        console.log('🚀 Initializing app...');
+        
         if (loadingElement) {
             loadingElement.style.display = 'flex';
         }
 
         setupEventListeners();
         
-        // Set default dates
+        const token = localStorage.getItem('token');
+        console.log('🔑 Token from localStorage:', token ? 'Found' : 'Not found');
+        
+        if (!token) {
+            console.warn('❌ No token found, redirecting to login');
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        apiService.setToken(token);
+        
+        // Set nilai default tanggal
         dueDateInput.value = selectedDate;
         eventDate.value = toISO(today);
-        dueDateInput.min = new Date().toISOString().split('T')[0];
-        eventDate.min = new Date().toISOString().split('T')[0];
+        
+        // Set min date untuk input
+        const todayStr = new Date().toISOString().split('T')[0];
+        dueDateInput.min = todayStr;
+        eventDate.min = todayStr;
+        if (editDueDate) editDueDate.min = todayStr;
 
-        // Initial render with slight delay for better UX
-        setTimeout(() => {
+        try {
+            console.log('📥 Loading tasks...');
+            await loadTasks();
+            console.log(`✅ Tasks loaded: ${todos.length} tasks`);
+            
+            await loadTaskStats();
+            
             renderCalendar();
-            setSelectedDate(selectedDate);
             renderTodos();
             
-            // Initial reminder check
-            setTimeout(() => {
-                updateReminders();
-            }, 1000);
+            updateReminders();
 
-            // Hide loading
             if (loadingElement) {
                 loadingElement.style.display = 'none';
             }
-        }, 800);
+            
+            console.log('🎉 App initialized successfully');
+        } catch (error) {
+            console.error('❌ Initialization error:', error);
+            notificationManager.showMessage('Gagal memuat data: ' + error.message, 'error');
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+        }
+    }
+
+    // Data Loading Functions - DIPERBAIKI
+    async function loadTasks() {
+        try {
+            console.log('📥 Loading tasks from API...');
+            const response = await apiService.getTasks();
+            
+            if (response && response.tasks) {
+                console.log('📦 API response tasks:', response.tasks);
+                
+                todos = response.tasks.map(task => {
+                    console.log(`   Task: ${task.title}`);
+                    console.log(`     ID: ${task.id}`);
+                    console.log(`     Status: ${task.status}`);
+                    console.log(`     Due Date: ${task.due_date}`);
+                    console.log(`     Due Date Formatted: ${task.due_date_formatted}`);
+                    
+                    // Gunakan due_date_formatted jika ada, jika tidak parse dari due_date
+                    let dueDate = task.due_date_formatted;
+                    if (!dueDate && task.due_date) {
+                        if (typeof task.due_date === 'string' && task.due_date.includes('T')) {
+                            dueDate = task.due_date.split('T')[0];
+                        } else {
+                            // Jika bukan string ISO, coba format langsung
+                            const dateObj = new Date(task.due_date);
+                            dueDate = dateObj.toISOString().split('T')[0];
+                        }
+                    }
+                    
+                    return {
+                        ...task,
+                        due_date: dueDate || task.due_date
+                    };
+                });
+                console.log(`✅ Loaded ${todos.length} tasks`);
+            } else if (Array.isArray(response)) {
+                todos = response.map(task => {
+                    let dueDate = task.due_date || task.dueDate;
+                    if (dueDate && typeof dueDate === 'string' && dueDate.includes('T')) {
+                        dueDate = dueDate.split('T')[0];
+                    }
+                    
+                    return {
+                        ...task,
+                        due_date: dueDate
+                    };
+                });
+                console.log(`✅ Loaded ${todos.length} tasks (array response)`);
+            } else {
+                console.warn('⚠️ No tasks in response:', response);
+                todos = [];
+            }
+        } catch (error) {
+            console.error('❌ Error loading tasks:', error);
+            notificationManager.showMessage('Gagal memuat tugas: ' + error.message, 'error');
+            throw error;
+        }
+    }
+
+    async function loadTaskStats() {
+        try {
+            console.log('📊 Loading task stats...');
+            const response = await apiService.getTaskStats();
+            if (response && response.stats) {
+                updateStatsDisplay(response.stats);
+                console.log('✅ Stats loaded');
+            }
+        } catch (error) {
+            console.error('❌ Error loading stats:', error);
+        }
     }
 
     // Setup Event Listeners
     function setupEventListeners() {
-        // Calendar Navigation
-        prevBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        });
+        console.log('🔧 Setting up event listeners...');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+        }
 
-        nextBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        });
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+        }
 
-        // Forms
-        addForm.addEventListener('submit', addTodo);
-        addEventBtn.addEventListener('click', addQuickEvent);
+        if (addForm) {
+            addForm.addEventListener('submit', (e) => {
+                console.log('➕ Add form submitted');
+                addTodo(e);
+            });
+        }
 
-        // Filters
-        filterDate.addEventListener('change', applyFilters);
-        filterPriority.addEventListener('change', applyFilters);
-        clearFilters.addEventListener('click', resetFilters);
+        if (addEventBtn) {
+            addEventBtn.addEventListener('click', (e) => {
+                console.log('🎯 Add event button clicked');
+                addQuickEvent(e);
+            });
+        }
 
-        // Search
-        taskSearch.addEventListener('input', function() {
-            applyFilters();
-        });
+        if (filterDate) {
+            filterDate.addEventListener('change', applyFilters);
+        }
 
-        // Popups
-        closeReward.addEventListener('click', hideReward);
-        viewAllTasksBtn.addEventListener('click', showTasksPopup);
-        tasksPopupClose.addEventListener('click', hideTasksPopup);
-        tasksPopupOverlay.addEventListener('click', hideTasksPopup);
+        if (filterPriority) {
+            filterPriority.addEventListener('change', applyFilters);
+        }
 
-        // Task Popup Filters
-        tasksFilterMonth.addEventListener('change', renderTasksPopup);
-        tasksFilterStatus.addEventListener('change', renderTasksPopup);
-        tasksFilterPriority.addEventListener('change', renderTasksPopup);
-        tasksFilterCategory.addEventListener('change', renderTasksPopup);
+        if (clearFilters) {
+            clearFilters.addEventListener('click', resetFilters);
+        }
 
-        // Edit Modal Events
-        editModalClose.addEventListener('click', hideEditModal);
-        editCancel.addEventListener('click', hideEditModal);
-        editForm.addEventListener('submit', saveEditedTodo);
-        editModalOverlay.addEventListener('click', hideEditModal);
+        if (taskSearch) {
+            taskSearch.addEventListener('input', debounce(() => {
+                applyFilters();
+            }, 300));
+        }
 
-        // Reminder
-        reminderClose.addEventListener('click', () => {
-            notificationManager.hideReminder();
-        });
+        if (closeReward) {
+            closeReward.addEventListener('click', hideReward);
+        }
 
-        // Keyboard shortcuts
+        if (viewAllTasksBtn) {
+            viewAllTasksBtn.addEventListener('click', showTasksPopup);
+        }
+
+        if (tasksPopupClose) {
+            tasksPopupClose.addEventListener('click', hideTasksPopup);
+        }
+
+        if (tasksPopupOverlay) {
+            tasksPopupOverlay.addEventListener('click', hideTasksPopup);
+        }
+
+        if (tasksFilterMonth) {
+            tasksFilterMonth.addEventListener('change', renderTasksPopup);
+        }
+
+        if (tasksFilterStatus) {
+            tasksFilterStatus.addEventListener('change', renderTasksPopup);
+        }
+
+        if (tasksFilterPriority) {
+            tasksFilterPriority.addEventListener('change', renderTasksPopup);
+        }
+
+        if (tasksFilterCategory) {
+            tasksFilterCategory.addEventListener('change', renderTasksPopup);
+        }
+
+        if (editModalClose) {
+            editModalClose.addEventListener('click', hideEditModal);
+        }
+
+        if (editCancel) {
+            editCancel.addEventListener('click', hideEditModal);
+        }
+
+        if (editForm) {
+            editForm.addEventListener('submit', (e) => {
+                console.log('✏️ Edit form submitted');
+                saveEditedTodo(e);
+            });
+        }
+
+        if (editModalOverlay) {
+            editModalOverlay.addEventListener('click', hideEditModal);
+        }
+
+        if (reminderClose) {
+            reminderClose.addEventListener('click', () => {
+                notificationManager.hideReminder();
+            });
+        }
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if (tasksPopup.classList.contains('active')) {
+                if (tasksPopup && tasksPopup.classList.contains('active')) {
                     hideTasksPopup();
                 }
-                if (editModal.classList.contains('active')) {
+                if (editModal && editModal.classList.contains('active')) {
                     hideEditModal();
                 }
-                if (sidebar.classList.contains('active')) {
+                if (sidebar && sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
                     overlay.classList.remove('active');
                     document.body.style.overflow = '';
                 }
-                if (rewardPopup.classList.contains('show')) {
+                if (rewardPopup && rewardPopup.classList.contains('show')) {
                     hideReward();
                 }
                 notificationManager.hideReminder();
             }
-            
-            // Ctrl+E untuk edit task pertama
-            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-                e.preventDefault();
-                const firstTodo = document.querySelector('.todo-item:not(.completed)');
-                if (firstTodo) {
-                    const id = firstTodo.querySelector('.todo-checkbox').dataset.id;
-                    showEditModal(id);
+        });
+
+        if (eventName) {
+            eventName.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addQuickEvent();
                 }
-            }
-        });
+            });
+        }
 
-        // Enter key untuk quick add
-        eventName.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addQuickEvent();
-            }
-        });
-
-        taskInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                addTodo(e);
-            }
-        });
+        if (taskInput) {
+            taskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    addTodo(e);
+                }
+            });
+        }
+        
+        console.log('✅ Event listeners setup complete');
     }
 
-    // Calendar Functions
+    // Debounce helper
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Calendar Functions - DIPERBAIKI
     function renderCalendar() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        monthYear.textContent = currentDate.toLocaleString('id-ID', { month: 'long' }) + ' ' + year;
+        if (monthYear) {
+            monthYear.textContent = currentDate.toLocaleString('id-ID', { month: 'long' }) + ' ' + year;
+        }
 
         const firstDay = new Date(year, month, 1).getDay();
         const lastDay = new Date(year, month + 1, 0).getDate();
 
-        calendarGrid.innerHTML = '';
+        if (calendarGrid) {
+            calendarGrid.innerHTML = '';
 
-        // Empty slots
-        for (let i = 0; i < firstDay; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'day';
-            empty.style.visibility = 'hidden';
-            calendarGrid.appendChild(empty);
-        }
-
-        // Days
-        for (let d = 1; d <= lastDay; d++) {
-            const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
-            const dayEl = document.createElement('div');
-            dayEl.className = 'day';
-            
-            // Check if today
-            if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                dayEl.classList.add('today');
-            }
-            
-            // Check for events
-            const dayTodos = todos.filter(t => t.date === dateStr);
-            if (dayTodos.length > 0) {
-                dayEl.classList.add('event');
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day';
+                empty.style.visibility = 'hidden';
+                calendarGrid.appendChild(empty);
             }
 
-            dayEl.innerHTML = `<div class="date">${d}</div>`;
-            
-            // Event badge
-            if (dayTodos.length > 0) {
-                const badge = document.createElement('div');
-                badge.className = 'event-badge';
-                badge.title = `${dayTodos.length} tugas`;
-                badge.innerHTML = `<span>📚</span> <span>${dayTodos.length}</span>`;
-                dayEl.appendChild(badge);
-            }
-            
-            const addIcon = document.createElement('div');
-            addIcon.className = 'add-icon';
-            addIcon.innerHTML = '+';
-            addIcon.title = 'Tambah tugas untuk tanggal ini';
-            addIcon.setAttribute('role', 'button');
-            addIcon.setAttribute('tabindex', '0');
-            addIcon.setAttribute('aria-label', `Tambah tugas untuk tanggal ${d}`);
-            
-            // Event listener yang diperbaiki
-            addIcon.addEventListener('click', function(ev) {
-                ev.preventDefault();
-                ev.stopPropagation();
-                ev.stopImmediatePropagation();
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
+                const dayEl = document.createElement('div');
+                dayEl.className = 'day';
                 
-                selectDatePreserveFilters(dateStr);
+                if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
                 
-                // Focus ke task input dengan delay
-                setTimeout(() => {
-                    if (taskInput) {
-                        taskInput.focus();
-                    }
-                }, 150);
-            });
-            
-            // Support untuk keyboard accessibility
-            addIcon.addEventListener('keydown', function(ev) {
-                if (ev.key === 'Enter' || ev.key === ' ') {
+                // Filter tasks untuk tanggal ini - DIPERBAIKI
+                const dayTodos = todos.filter(t => {
+                    const taskDate = t.due_date;
+                    return taskDate === dateStr;
+                });
+                
+                if (dayTodos.length > 0) {
+                    dayEl.classList.add('event');
+                }
+
+                dayEl.innerHTML = `<div class="date">${d}</div>`;
+                
+                if (dayTodos.length > 0) {
+                    const badge = document.createElement('div');
+                    badge.className = 'event-badge';
+                    badge.title = `${dayTodos.length} tugas`;
+                    badge.innerHTML = `<span>📚</span> <span>${dayTodos.length}</span>`;
+                    dayEl.appendChild(badge);
+                }
+                
+                const addIcon = document.createElement('div');
+                addIcon.className = 'add-icon';
+                addIcon.innerHTML = '+';
+                addIcon.title = 'Tambah tugas untuk tanggal ini';
+                addIcon.setAttribute('role', 'button');
+                addIcon.setAttribute('tabindex', '0');
+                addIcon.setAttribute('aria-label', `Tambah tugas untuk tanggal ${d}`);
+                
+                addIcon.addEventListener('click', function(ev) {
                     ev.preventDefault();
                     ev.stopPropagation();
                     selectDatePreserveFilters(dateStr);
                     
                     setTimeout(() => {
-                        if (taskInput) taskInput.focus();
+                        if (taskInput) {
+                            taskInput.focus();
+                        }
                     }, 150);
-                }
-            });
-            
-            dayEl.appendChild(addIcon);
-            
-            // Day click - untuk memilih tanggal (tanpa reset filter)
-            dayEl.addEventListener('click', () => {
-                selectDatePreserveFilters(dateStr);
-            });
+                });
+                
+                addIcon.addEventListener('keydown', function(ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        selectDatePreserveFilters(dateStr);
+                        
+                        setTimeout(() => {
+                            if (taskInput) taskInput.focus();
+                        }, 150);
+                    }
+                });
+                
+                dayEl.appendChild(addIcon);
+                
+                dayEl.addEventListener('click', () => {
+                    selectDatePreserveFilters(dateStr);
+                });
 
-            calendarGrid.appendChild(dayEl);
+                calendarGrid.appendChild(dayEl);
+            }
         }
     }
 
     function selectDatePreserveFilters(dateStr) {
-        // Simpan state filter sebelum mengganti date
-        const currentDateFilter = filterDate.value;
-        const currentPriorityFilter = filterPriority.value;
-        const currentSearchTerm = taskSearch.value;
+        console.log('📅 Selecting date:', dateStr);
         
-        // Update selected date
+        const currentDateFilter = filterDate ? filterDate.value : '';
+        const currentPriorityFilter = filterPriority ? filterPriority.value : '';
+        const currentSearchTerm = taskSearch ? taskSearch.value : '';
+        
         selectedDate = dateStr;
-        dateLabel.textContent = `Semua Tugas`;
-        dueDateInput.value = dateStr;
-        updateQueryParam(dateStr);
+        if (dateLabel) {
+            dateLabel.textContent = `Tugas untuk ${formatDateDisplay(dateStr)}`;
+        }
+        if (dueDateInput) {
+            dueDateInput.value = dateStr;
+        }
         
-        // Render todos dengan filter yang sama
         setTimeout(() => {
-            // Restore filters
-            if (currentDateFilter) filterDate.value = currentDateFilter;
-            if (currentPriorityFilter) filterPriority.value = currentPriorityFilter;
-            if (currentSearchTerm) taskSearch.value = currentSearchTerm;
+            if (filterDate && currentDateFilter) filterDate.value = currentDateFilter;
+            if (filterPriority && currentPriorityFilter) filterPriority.value = currentPriorityFilter;
+            if (taskSearch && currentSearchTerm) taskSearch.value = currentSearchTerm;
             
-            // Re-render dengan filter yang dipulihkan
             renderTodos();
         }, 10);
     }
 
-    function setSelectedDate(dateStr) {
-        selectedDate = dateStr;
-        dateLabel.textContent = `Semua Tugas`;
-        dueDateInput.value = dateStr;
-        renderTodos();
-        updateQueryParam(dateStr);
-    }
-
-    function updateQueryParam(dateStr) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('date', dateStr);
-        window.history.replaceState({}, '', url);
-    }
-
-    // Todo Functions
+    // Todo Functions - DIPERBAIKI
     function renderTodos() {
+        console.log('🔄 Rendering todos for date:', selectedDate);
+        
         let filtered = getFilteredTodos();
+        console.log(`   Filtered ${filtered.length} tasks`);
+        
         renderFilteredTodos(filtered);
     }
 
     function getFilteredTodos() {
-        // Hanya ambil tugas dari tanggal yang dipilih
-        let filtered = todos.filter(t => t.date === selectedDate);
+        // Filter berdasarkan tanggal yang dipilih - DIPERBAIKI
+        let filtered = todos.filter(t => {
+            const taskDate = t.due_date;
+            return taskDate === selectedDate;
+        });
         
-        const dateFilter = filterDate.value;
-        const priorityFilter = filterPriority.value;
-        const searchTerm = taskSearch.value.toLowerCase().trim();
+        console.log(`   Found ${filtered.length} tasks for date ${selectedDate}`);
         
-        // Filter tambahan berdasarkan tanggal jika ada filter tanggal
+        const dateFilter = filterDate ? filterDate.value : '';
+        const priorityFilter = filterPriority ? filterPriority.value : '';
+        const searchTerm = taskSearch ? taskSearch.value.toLowerCase().trim() : '';
+        
         if (dateFilter) {
-            filtered = filtered.filter(t => t.date === dateFilter);
+            filtered = filtered.filter(t => t.due_date === dateFilter);
         }
         
         if (priorityFilter) {
@@ -537,9 +851,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (searchTerm) {
             filtered = filtered.filter(t => 
-                t.text.toLowerCase().includes(searchTerm) ||
-                categoryLabels[t.category].toLowerCase().includes(searchTerm) ||
-                priorityLabels[t.priority].toLowerCase().includes(searchTerm)
+                t.title.toLowerCase().includes(searchTerm) ||
+                (t.description && t.description.toLowerCase().includes(searchTerm)) ||
+                (categoryLabels[t.category] && categoryLabels[t.category].toLowerCase().includes(searchTerm)) ||
+                (priorityLabels[t.priority] && priorityLabels[t.priority].toLowerCase().includes(searchTerm))
             );
         }
         
@@ -547,6 +862,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderFilteredTodos(filtered) {
+        if (!todoListEl) return;
+        
         todoListEl.innerHTML = '';
 
         if (filtered.length === 0) {
@@ -556,9 +873,9 @@ document.addEventListener('DOMContentLoaded', function() {
             empty.style.background = 'transparent';
             empty.style.boxShadow = 'none';
             
-            const searchTerm = taskSearch.value;
-            const dateFilter = filterDate.value;
-            const priorityFilter = filterPriority.value;
+            const searchTerm = taskSearch ? taskSearch.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const priorityFilter = filterPriority ? filterPriority.value : '';
             
             if (searchTerm) {
                 empty.innerHTML = `
@@ -587,12 +904,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             todoListEl.appendChild(empty);
         } else {
-            // Urutkan tugas: yang belum selesai dulu, lalu berdasarkan tanggal
             filtered.sort((a, b) => {
-                if (a.completed !== b.completed) {
-                    return a.completed ? 1 : -1;
+                const statusOrder = { 'todo': 1, 'in_progress': 2, 'completed': 3 };
+                const statusA = statusOrder[a.status] || 4;
+                const statusB = statusOrder[b.status] || 4;
+                
+                if (statusA !== statusB) {
+                    return statusA - statusB;
                 }
-                return new Date(a.date) - new Date(b.date);
+                
+                // Urutkan berdasarkan due_date
+                const dateA = new Date(a.due_date);
+                const dateB = new Date(b.due_date);
+                return dateA - dateB;
             });
 
             filtered.forEach(todo => {
@@ -601,39 +925,123 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // PERBAIKAN: Update progress dengan semua tugas di tanggal yang dipilih
-        const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
+        const allTasksForSelectedDate = todos.filter(t => t.due_date === selectedDate);
         updateProgress(allTasksForSelectedDate);
         attachTodoEvents();
     }
 
+    // DIPERBAIKI: Fungsi createTodoElement dengan icon yang benar
     function createTodoElement(todo) {
+        console.log('🎨 Creating todo element:', todo.id, todo.title);
+        
         const el = document.createElement('div');
         el.className = 'todo-item';
-        if (todo.completed) el.classList.add('completed');
+        if (todo.status === 'completed') el.classList.add('completed');
 
-        const overdue = new Date(todo.date) < new Date() && !todo.completed;
+        // Tentukan tanggal dengan benar untuk cek overdue - DIPERBAIKI
+        const taskDate = new Date(todo.due_date + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const overdue = taskDate < today && todo.status !== 'completed';
         if (overdue) el.classList.add('overdue');
 
-        const updatedIndicator = todo.updatedAt ? '<span class="todo-chip">Diupdate</span>' : '';
+        // Tentukan icon berdasarkan status - DIPERBAIKI
+        let statusIcon = '◯';
+        let statusClass = '';
+        let statusIconClass = '';
+        
+        switch(todo.status) {
+            case 'completed':
+                statusIcon = '✓';
+                statusClass = 'checked';
+                statusIconClass = 'bx bx-check';
+                break;
+            case 'in_progress':
+                statusIcon = '▶';
+                statusClass = 'in-progress';
+                statusIconClass = 'bx bx-play';
+                break;
+            default:
+                statusIcon = '◯';
+                statusClass = 'todo';
+                statusIconClass = 'bx bx-circle';
+        }
+
+        // Tentukan icon priority - DIPERBAIKI
+        let priorityIcon = '';
+        let priorityIconClass = '';
+        switch(todo.priority) {
+            case 'high':
+                priorityIcon = '⬆';
+                priorityIconClass = 'bx bx-up-arrow-alt';
+                break;
+            case 'low':
+                priorityIcon = '⬇';
+                priorityIconClass = 'bx bx-down-arrow-alt';
+                break;
+            default:
+                priorityIcon = '●';
+                priorityIconClass = 'bx bx-circle';
+        }
 
         el.innerHTML = `
-            <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-id="${todo.id}"></div>
+            <div class="todo-checkbox ${statusClass}" 
+                 data-id="${todo.id}" 
+                 data-status="${todo.status}"
+                 title="${statusLabels[todo.status] || todo.status}">
+                 <i class="${statusIconClass}"></i>
+            </div>
             <div class="todo-content">
-                <div class="todo-title">${escapeHtml(todo.text)}</div>
+                <div class="todo-title">
+                    ${escapeHtml(todo.title || 'No title')}
+                    ${todo.priority === 'high' ? ' <span class="priority-badge">!</span>' : ''}
+                </div>
+                ${todo.description ? `<div class="todo-description">${escapeHtml(todo.description)}</div>` : ''}
                 <div class="todo-meta">
-                    <span class="todo-chip">${categoryLabels[todo.category]}</span>
-                    <span class="todo-chip">${formatDateDisplay(todo.date)}</span>
-                    ${todo.priority !== 'normal' ? `<span class="todo-chip">${priorityLabels[todo.priority]}</span>` : ''}
-                    ${updatedIndicator}
-                    ${overdue ? '<span class="todo-chip" style="background:#ffcccc;">Terlambat</span>' : ''}
+                    <span class="todo-chip ${todo.status}">
+                        <i class='${statusIconClass}'></i>
+                        ${statusLabels[todo.status] || todo.status || 'todo'}
+                    </span>
+                    <span class="todo-chip">
+                        <i class='bx bx-category'></i>
+                        ${categoryLabels[todo.category] || todo.category || 'lainnya'}
+                    </span>
+                    <span class="todo-chip date-chip">
+                        <i class='bx bx-calendar'></i>
+                        ${formatDateDisplay(todo.due_date) || 'No date'}
+                    </span>
+                    ${todo.priority && todo.priority !== 'normal' ? `
+                        <span class="todo-chip priority-${todo.priority}">
+                            <i class='${priorityIconClass}'></i>
+                            ${priorityLabels[todo.priority] || todo.priority}
+                        </span>
+                    ` : ''}
+                    ${overdue ? `
+                        <span class="todo-chip overdue-chip">
+                            <i class='bx bx-time-five'></i>
+                            Terlambat
+                        </span>
+                    ` : ''}
                 </div>
             </div>
             <div class="todo-actions">
-                <button class="edit-btn" data-id="${todo.id}" title="Edit tugas">
+                ${todo.status !== 'completed' ? `
+                    <button class="status-btn action-btn" data-id="${todo.id}" data-status="in_progress" title="Tandai sedang dikerjakan">
+                        <i class='bx bx-play'></i>
+                    </button>
+                    <button class="status-btn complete-btn action-btn" data-id="${todo.id}" data-status="completed" title="Tandai selesai">
+                        <i class='bx bx-check'></i>
+                    </button>
+                ` : `
+                    <button class="status-btn action-btn" data-id="${todo.id}" data-status="todo" title="Tandai belum mulai">
+                        <i class='bx bx-undo'></i>
+                    </button>
+                `}
+                <button class="edit-btn action-btn" data-id="${todo.id}" title="Edit tugas">
                     <i class='bx bx-edit'></i>
                 </button>
-                <button class="delete-btn" data-id="${todo.id}" title="Hapus tugas">
+                <button class="delete-btn action-btn" data-id="${todo.id}" title="Hapus tugas">
                     <i class='bx bx-trash'></i>
                 </button>
             </div>
@@ -642,113 +1050,137 @@ document.addEventListener('DOMContentLoaded', function() {
         return el;
     }
 
+    // FIXED: Event handling untuk checkbox dan tombol status
     function attachTodoEvents() {
-        // Checkbox events
+        console.log('🔗 Attaching todo events...');
+        
+        // Event untuk checkbox
         document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = checkbox.dataset.id;
-                const todo = todos.find(t => t.id === id);
-                if (todo) {
-                    const wasCompleted = todo.completed;
-                    todo.completed = !todo.completed;
-                    saveTodos();
-                    renderTodos();
-                    renderCalendar();
-                    updateReminders();
-                    
-                    // Tampilkan pesan untuk tugas individual
-                    notificationManager.showMessage(
-                        todo.completed ? 'Tugas diselesaikan! ✓' : 'Tugas ditandai belum selesai', 
-                        'success',
-                        2000
-                    );
-                }
-            });
+            checkbox.addEventListener('click', handleCheckboxClick);
         });
 
-        // Delete events
+        // Event untuk tombol status (play, check, undo)
+        document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.addEventListener('click', handleStatusButtonClick);
+        });
+
+        // Event untuk delete
         document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = btn.dataset.id;
-                const todo = todos.find(t => t.id === id);
-                if (id && confirm(`Hapus tugas "${todo.text}"?`)) {
-                    todos = todos.filter(t => t.id !== id);
-                    saveTodos();
-                    renderCalendar();
-                    renderTodos();
-                    updateReminders();
-                    notificationManager.showMessage('Tugas berhasil dihapus', 'success', 2000);
-                }
-            });
+            btn.addEventListener('click', handleDeleteClick);
         });
         
-        // Edit events
+        // Event untuk edit
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = btn.dataset.id;
-                showEditModal(id);
-            });
-        });
-        
-        // Double click to edit
-        document.querySelectorAll('.todo-item').forEach(item => {
-            let clickCount = 0;
-            let clickTimer = null;
-            
-            item.addEventListener('click', (e) => {
-                // Skip jika klik pada elemen yang tidak boleh trigger double click
-                if (e.target.closest('.todo-checkbox') || 
-                    e.target.closest('.todo-actions') || 
-                    e.target.closest('.edit-input')) {
-                    return;
-                }
-                
-                clickCount++;
-                
-                if (clickCount === 1) {
-                    clickTimer = setTimeout(() => {
-                        clickCount = 0;
-                    }, 300);
-                } else if (clickCount === 2) {
-                    clearTimeout(clickTimer);
-                    clickCount = 0;
-                    
-                    const id = item.querySelector('.todo-checkbox').dataset.id;
-                    const todo = todos.find(t => t.id === id);
-                    if (todo && !todo.completed) {
-                        enableInlineEdit(id);
-                    }
-                }
-            });
+            btn.addEventListener('click', handleEditClick);
         });
     }
 
+    async function handleCheckboxClick(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        const currentStatus = this.dataset.status;
+        
+        console.log('✓ Checkbox clicked, id:', id, 'current status:', currentStatus);
+        
+        const newStatus = currentStatus === 'completed' ? 'todo' : 'completed';
+        
+        await updateTaskStatus(id, newStatus);
+    }
+
+    async function handleStatusButtonClick(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        const newStatus = this.dataset.status;
+        
+        console.log('🔄 Status button clicked, id:', id, 'new status:', newStatus);
+        
+        await updateTaskStatus(id, newStatus);
+    }
+
+    async function handleDeleteClick(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        const todo = todos.find(t => t.id == id);
+        
+        if (id && todo && confirm(`Hapus tugas "${todo.title}"?`)) {
+            try {
+                const response = await apiService.deleteTask(id);
+                if (response) {
+                    notificationManager.showMessage('Tugas berhasil dihapus', 'success', 2000);
+                    
+                    todos = todos.filter(t => t.id != id);
+                    
+                    renderCalendar();
+                    renderTodos();
+                    await loadTaskStats();
+                    updateReminders();
+                }
+            } catch (error) {
+                notificationManager.showMessage('Gagal menghapus tugas: ' + error.message, 'error');
+            }
+        }
+    }
+
+    function handleEditClick(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        showEditModal(id);
+    }
+
+    async function updateTaskStatus(id, status) {
+        try {
+            console.log(`🔄 Updating task ${id} to status ${status}`);
+            const response = await apiService.updateTaskStatus(id, status);
+            
+            if (response && response.task) {
+                console.log('✅ Status updated successfully:', response.task);
+                notificationManager.showMessage('Status tugas berhasil diubah', 'success', 2000);
+                
+                const todoIndex = todos.findIndex(t => t.id == id);
+                if (todoIndex !== -1) {
+                    todos[todoIndex] = {
+                        ...todos[todoIndex],
+                        status: response.task.status,
+                        updated_at: response.task.updated_at
+                    };
+                }
+                
+                renderCalendar();
+                renderTodos();
+                await loadTaskStats();
+                updateReminders();
+            } else {
+                console.error('❌ No task in response:', response);
+                notificationManager.showMessage('Gagal mengubah status: respons tidak valid', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Error updating task status:', error);
+            notificationManager.showMessage('Gagal mengubah status: ' + error.message, 'error');
+        }
+    }
+
     // Edit Modal Functions
-    function showEditModal(todoId) {
-        const todo = todos.find(t => t.id === todoId);
+    function showEditModal(taskId) {
+        const todo = todos.find(t => t.id == taskId);
         if (!todo) {
             notificationManager.showMessage('Tugas tidak ditemukan!', 'error');
             return;
         }
         
-        // Isi formulir dengan data saat ini
         editTaskId.value = todo.id;
-        editTaskText.value = todo.text;
-        editDueDate.value = todo.date;
-        editPriority.value = todo.priority;
-        editCategory.value = todo.category;
+        editTaskText.value = todo.title || '';
+        editDescription.value = todo.description || '';
+        editDueDate.value = todo.due_date || selectedDate;
+        editPriority.value = todo.priority || 'normal';
+        editCategory.value = todo.category || 'kuliah';
+        editStatus.value = todo.status || 'todo';
         
-        // Set min date untuk edit
         editDueDate.min = new Date().toISOString().split('T')[0];
         
         editModal.classList.add('active');
         editModalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         
-        // Focus dan select text
         setTimeout(() => {
             editTaskText.focus();
             editTaskText.select();
@@ -762,11 +1194,11 @@ document.addEventListener('DOMContentLoaded', function() {
         editForm.reset();
     }
 
-    function saveEditedTodo(e) {
+    async function saveEditedTodo(e) {
         e.preventDefault();
         
-        const todoId = editTaskId.value;
-        const todo = todos.find(t => t.id === todoId);
+        const taskId = editTaskId.value;
+        const todo = todos.find(t => t.id == taskId);
         
         if (!todo) {
             notificationManager.showMessage('Tugas tidak ditemukan!', 'error');
@@ -779,235 +1211,198 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validasi tanggal
-        const selectedDate = new Date(editDueDate.value);
+        const selectedDateValue = new Date(editDueDate.value + 'T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        if (selectedDate < today) {
+        if (selectedDateValue < today) {
             notificationManager.showMessage('Tidak bisa memilih tanggal masa lalu!', 'error');
             editDueDate.focus();
             return;
         }
         
-        // Update todo data
-        todo.text = editTaskText.value.trim();
-        todo.date = editDueDate.value;
-        todo.priority = editPriority.value;
-        todo.category = editCategory.value;
-        todo.updatedAt = Date.now();
-        
-        saveTodos();
-        renderCalendar();
-        renderTodos();
-        hideEditModal();
-        
-        notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
-    }
-
-    // Inline Edit Functions
-    function enableInlineEdit(todoId) {
-        const todo = todos.find(t => t.id === todoId);
-        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
-        
-        if (!todo || !todoElement) {
-            console.error('Todo tidak ditemukan untuk edit inline:', todoId);
-            return;
-        }
-        
-        // Set editing mode
-        todoElement.classList.add('editing');
-        
-        const currentContent = todoElement.querySelector('.todo-content');
-        if (!currentContent) {
-            console.error('Elemen todo-content tidak ditemukan');
-            return;
-        }
-        
-        // Simpan konten asli untuk fallback
-        const originalContent = currentContent.innerHTML;
-        
-        currentContent.innerHTML = `
-            <input type="text" class="edit-input" value="${escapeHtml(todo.text)}" placeholder="Nama tugas...">
-            <div class="edit-actions">
-                <button type="button" class="edit-save" data-id="${todoId}">
-                    <i class='bx bx-check'></i> Simpan
-                </button>
-                <button type="button" class="edit-cancel" data-id="${todoId}">
-                    <i class='bx bx-x'></i> Batal
-                </button>
-            </div>
-        `;
-        
-        const input = currentContent.querySelector('.edit-input');
-        if (!input) {
-            console.error('Input edit tidak ditemukan');
-            currentContent.innerHTML = originalContent;
-            return;
-        }
-        
-        // Focus dan select semua text
-        input.focus();
-        input.select();
-        
-        // Event listeners untuk tombol inline
-        const saveBtn = currentContent.querySelector('.edit-save');
-        const cancelBtn = currentContent.querySelector('.edit-cancel');
-        
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => saveInlineEdit(todoId));
-        }
-        
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => cancelInlineEdit(todoId));
-        }
-        
-        // Enter to save, Escape to cancel
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                saveInlineEdit(todoId);
-            } else if (e.key === 'Escape') {
-                cancelInlineEdit(todoId);
+        try {
+            const taskData = {
+                title: editTaskText.value.trim(),
+                description: editDescription.value.trim(),
+                dueDate: editDueDate.value,
+                priority: editPriority.value,
+                category: editCategory.value,
+                status: editStatus.value
+            };
+            
+            console.log('✏️ Updating task with data:', taskData);
+            
+            const response = await apiService.updateTask(taskId, taskData);
+            if (response && response.task) {
+                notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
+                
+                const todoIndex = todos.findIndex(t => t.id == taskId);
+                if (todoIndex !== -1) {
+                    todos[todoIndex] = {
+                        ...response.task,
+                        due_date: response.task.due_date_formatted || 
+                                 (response.task.due_date ? 
+                                  response.task.due_date.split('T')[0] : 
+                                  editDueDate.value)
+                    };
+                }
+                
+                renderCalendar();
+                renderTodos();
+                hideEditModal();
             }
-        });
-        
-        // Click outside to save
-        const outsideClickHandler = (e) => {
-            if (!todoElement.contains(e.target)) {
-                saveInlineEdit(todoId);
-                document.removeEventListener('click', outsideClickHandler);
-            }
-        };
-        
-        // Delay sedikit untuk menghindari trigger langsung
-        setTimeout(() => {
-            document.addEventListener('click', outsideClickHandler);
-        }, 100);
+        } catch (error) {
+            notificationManager.showMessage('Gagal mengupdate tugas: ' + error.message, 'error');
+        }
     }
 
-    function saveInlineEdit(todoId) {
-        const todo = todos.find(t => t.id === todoId);
-        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`).closest('.todo-item');
+    // DIPERBAIKI: Fungsi addTodo dengan penanganan tanggal yang benar
+    async function addTodo(e) {
+        if (e) e.preventDefault();
         
-        if (!todo || !todoElement) {
-            console.error('Todo tidak ditemukan untuk disimpan:', todoId);
-            return;
-        }
+        console.log('➕ addTodo called');
         
-        const input = todoElement.querySelector('.edit-input');
-        if (!input) {
-            console.error('Input edit tidak ditemukan untuk disimpan');
-            return;
-        }
-        
-        const newText = input.value.trim();
-        
-        if (!newText) {
-            notificationManager.showMessage('Nama tugas tidak boleh kosong!', 'error');
-            input.focus();
-            return;
-        }
-        
-        if (newText === todo.text) {
-            // Tidak ada perubahan, cukup batalkan
-            cancelInlineEdit(todoId);
-            return;
-        }
-        
-        // Update todo data
-        todo.text = newText;
-        todo.updatedAt = Date.now();
-        
-        saveTodos();
-        renderTodos(); // Render ulang untuk menampilkan perubahan
-        
-        notificationManager.showMessage('Tugas berhasil diupdate! ✓', 'success', 2000);
-    }
-
-    function cancelInlineEdit(todoId) {
-        const todoElement = document.querySelector(`.todo-checkbox[data-id="${todoId}"]`)?.closest('.todo-item');
-        if (todoElement) {
-            todoElement.classList.remove('editing');
-        }
-        renderTodos(); // Render ulang untuk kembali ke tampilan normal
-    }
-
-    function addTodo(e) {
-        e.preventDefault();
-        
-        if (!taskInput.value.trim()) {
+        if (!taskInput || !taskInput.value.trim()) {
             notificationManager.showMessage('Isi tugas terlebih dahulu!', 'error', 2000);
-            taskInput.focus();
+            if (taskInput) taskInput.focus();
             return;
         }
 
-        if (!dueDateInput.value) {
+        if (!dueDateInput || !dueDateInput.value) {
             notificationManager.showMessage('Pilih tanggal jatuh tempo!', 'error', 2000);
-            dueDateInput.focus();
+            if (dueDateInput) dueDateInput.focus();
             return;
         }
 
-        // Validasi tanggal tidak boleh masa lalu
-        const selectedDate = new Date(dueDateInput.value);
+        // Validasi format tanggal
+        const selectedDateStr = dueDateInput.value;
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        
+        if (!dateRegex.test(selectedDateStr)) {
+            notificationManager.showMessage('Format tanggal tidak valid! Gunakan format YYYY-MM-DD', 'error', 3000);
+            if (dueDateInput) dueDateInput.focus();
+            return;
+        }
+
+        const selectedDateValue = new Date(selectedDateStr + 'T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        if (selectedDate < today) {
+        console.log('📅 Selected Date (String):', selectedDateStr);
+        console.log('📅 Selected Date (Date):', selectedDateValue);
+        console.log('📅 Today:', today);
+        
+        if (selectedDateValue < today) {
             notificationManager.showMessage('Tidak bisa memilih tanggal masa lalu!', 'error', 3000);
-            dueDateInput.focus();
+            if (dueDateInput) dueDateInput.focus();
             return;
         }
 
-        const newTodo = {
-            id: Date.now().toString(),
-            text: taskInput.value.trim(),
-            date: dueDateInput.value,
-            priority: priorityInput.value,
-            category: categoryInput.value,
-            completed: false,
-            createdAt: Date.now()
-        };
-
-        todos.push(newTodo);
-        saveTodos();
-        taskInput.value = '';
-        renderCalendar();
-        renderTodos();
-        
-        notificationManager.showMessage('Tugas berhasil ditambahkan! ✓', 'success', 2000);
-        
-        setTimeout(() => {
-            updateReminders();
-        }, 2500);
+        try {
+            const taskData = {
+                title: taskInput.value.trim(),
+                description: '',
+                dueDate: selectedDateStr, // Format: '2024-01-05' (JANGAN diubah!)
+                priority: priorityInput ? priorityInput.value : 'normal',
+                category: categoryInput ? categoryInput.value : 'kuliah',
+                status: 'todo'
+            };
+            
+            console.log('📤 Task data to send:', taskData);
+            
+            const response = await apiService.createTask(taskData);
+            console.log('✅ Backend response:', response);
+            
+            if (response && response.task) {
+                notificationManager.showMessage('Tugas berhasil ditambahkan! ✓', 'success', 2000);
+                
+                // Parse tanggal dari response dengan benar
+                const newTask = {
+                    ...response.task,
+                    due_date: response.task.due_date_formatted || 
+                             (response.task.due_date ? 
+                              response.task.due_date.split('T')[0] : 
+                              selectedDateStr)
+                };
+                
+                console.log('📝 New task to add:', newTask);
+                
+                todos.push(newTask);
+                
+                if (taskInput) taskInput.value = '';
+                
+                // Refresh tampilan
+                renderCalendar();
+                renderTodos();
+                await loadTaskStats();
+                
+                setTimeout(() => {
+                    updateReminders();
+                }, 1000);
+            } else if (response && response.message) {
+                notificationManager.showMessage(response.message, 'success', 2000);
+                await loadTasks();
+                renderCalendar();
+                renderTodos();
+                await loadTaskStats();
+            } else {
+                notificationManager.showMessage('Tugas dibuat tetapi respons tidak valid', 'warning');
+            }
+        } catch (error) {
+            console.error('❌ Error adding todo:', error);
+            notificationManager.showMessage('Gagal menambahkan tugas: ' + error.message, 'error');
+        }
     }
 
-    function addQuickEvent() {
-        if (!eventName.value.trim() || !eventDate.value) {
+    async function addQuickEvent(e) {
+        if (e) e.preventDefault();
+        
+        if (!eventName || !eventName.value.trim() || !eventDate || !eventDate.value) {
             notificationManager.showMessage('Isi nama event dan tanggal dulu!', 'error', 2000);
             return;
         }
 
-        const newTodo = {
-            id: Date.now().toString(),
-            text: eventName.value.trim(),
-            date: eventDate.value,
-            priority: 'normal',
-            category: 'lainnya',
-            completed: false,
-            createdAt: Date.now()
-        };
-
-        todos.push(newTodo);
-        saveTodos();
-        eventName.value = '';
-        renderCalendar();
-        setSelectedDate(newTodo.date);
-        
-        notificationManager.showMessage('Event berhasil ditambahkan! ✓', 'success', 2000);
-        
-        setTimeout(() => {
-            updateReminders();
-        }, 2500);
+        try {
+            const taskData = {
+                title: eventName.value.trim(),
+                description: '',
+                dueDate: eventDate.value,
+                priority: 'normal',
+                category: 'lainnya',
+                status: 'todo'
+            };
+            
+            const response = await apiService.createTask(taskData);
+            if (response && response.task) {
+                notificationManager.showMessage('Event berhasil ditambahkan! ✓', 'success', 2000);
+                
+                const newTask = {
+                    ...response.task,
+                    due_date: response.task.due_date_formatted || 
+                             (response.task.due_date ? 
+                              response.task.due_date.split('T')[0] : 
+                              eventDate.value)
+                };
+                
+                todos.push(newTask);
+                
+                if (eventName) eventName.value = '';
+                
+                selectedDate = taskData.dueDate;
+                if (dueDateInput) dueDateInput.value = selectedDate;
+                
+                renderCalendar();
+                renderTodos();
+                await loadTaskStats();
+                
+                setTimeout(() => {
+                    updateReminders();
+                }, 2500);
+            }
+        } catch (error) {
+            notificationManager.showMessage('Gagal menambahkan event: ' + error.message, 'error');
+        }
     }
 
     // Filter Functions
@@ -1016,9 +1411,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetFilters() {
-        filterDate.value = '';
-        filterPriority.value = '';
-        taskSearch.value = '';
+        if (filterDate) filterDate.value = '';
+        if (filterPriority) filterPriority.value = '';
+        if (taskSearch) taskSearch.value = '';
         renderTodos();
         notificationManager.showMessage('Filter direset', 'info', 2000);
     }
@@ -1026,27 +1421,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Progress Functions
     function updateProgress(list) {
         const total = list.length;
-        const done = list.filter(t => t.completed).length;
-        progressText.textContent = `${done}/${total} tugas selesai`;
-        const percent = total ? Math.round(done * 100 / total) : 0;
-        percentText.textContent = percent + '%';
-        progressFill.style.width = percent + '%';
-
-        // PERBAIKAN: Cek apakah SEMUA tugas di tanggal yang dipilih sudah selesai
-        if (total > 0 && done === total) {
-            // Pastikan ini adalah semua tugas di tanggal yang sedang dilihat
-            const allTasksForSelectedDate = todos.filter(t => t.date === selectedDate);
-            const allCompleted = allTasksForSelectedDate.every(t => t.completed);
-            
-            if (allCompleted && allTasksForSelectedDate.length > 0) {
-                showReward();
-            }
+        const done = list.filter(t => t.status === 'completed').length;
+        
+        if (progressText) {
+            progressText.textContent = `${done}/${total} tugas selesai`;
         }
+        
+        const percent = total ? Math.round(done * 100 / total) : 0;
+        
+        if (percentText) {
+            percentText.textContent = percent + '%';
+        }
+        
+        if (progressFill) {
+            progressFill.style.width = percent + '%';
+        }
+
+        if (total > 0 && done === total) {
+            showReward();
+        }
+    }
+
+    function updateStatsDisplay(stats) {
+        if (totalTasks) totalTasks.textContent = stats.total || 0;
+        if (completedTasks) completedTasks.textContent = stats.completed || 0;
+        if (pendingTasks) pendingTasks.textContent = stats.pending || 0;
+        if (overdueTasks) overdueTasks.textContent = stats.overdue || 0;
     }
 
     // Reward Functions
     function showReward() {
-        // Update konten reward popup untuk semua tugas
         const rewardContent = document.querySelector('.reward-content');
         if (rewardContent) {
             rewardContent.innerHTML = `
@@ -1057,98 +1461,116 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button id="closeReward" class="primary-btn" aria-label="Tutup popup reward">Tutup</button>
             `;
             
-            // Re-attach event listener untuk tombol close
             const closeBtn = document.getElementById('closeReward');
             if (closeBtn) {
                 closeBtn.addEventListener('click', hideReward);
             }
         }
         
-        rewardPopup.classList.add('show');
-        
-        // Auto hide setelah 8 detik
-        setTimeout(() => {
-            if (rewardPopup.classList.contains('show')) {
-                hideReward();
-            }
-        }, 8000);
+        if (rewardPopup) {
+            rewardPopup.classList.add('show');
+            
+            setTimeout(() => {
+                if (rewardPopup.classList.contains('show')) {
+                    hideReward();
+                }
+            }, 8000);
+        }
     }
 
     function hideReward() {
-        rewardPopup.classList.remove('show');
-    }
-
-    // PERBAIKAN: Fungsi untuk mengecek apakah semua tugas di tanggal tertentu sudah selesai
-    function checkAllTasksCompleted(date) {
-        const tasksForDate = todos.filter(t => t.date === date);
-        return tasksForDate.length > 0 && tasksForDate.every(t => t.completed);
+        if (rewardPopup) {
+            rewardPopup.classList.remove('show');
+        }
     }
 
     // Tasks Popup Functions
-    function showTasksPopup() {
+    async function showTasksPopup() {
+        if (!tasksPopup) return;
+        
         tasksPopup.classList.add('active');
         tasksPopupOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        renderTasksPopup();
+        
+        try {
+            await loadTasks();
+            renderTasksPopup();
+        } catch (error) {
+            notificationManager.showMessage('Gagal memuat data', 'error');
+        }
     }
 
     function hideTasksPopup() {
+        if (!tasksPopup) return;
+        
         tasksPopup.classList.remove('active');
         tasksPopupOverlay.classList.remove('active');
         document.body.style.overflow = '';
     }
 
-    function renderTasksPopup() {
-        // Calculate statistics
-        const total = todos.length;
-        const completed = todos.filter(t => t.completed).length;
-        const pending = total - completed;
-        const overdue = todos.filter(t => !t.completed && new Date(t.date) < new Date()).length;
-
-        // Update statistics
-        totalTasks.textContent = total;
-        completedTasks.textContent = completed;
-        pendingTasks.textContent = pending;
-        overdueTasks.textContent = overdue;
-
-        // Apply filters
-        const filteredTasks = getFilteredTasksPopup();
-        renderFilteredTasksPopup(filteredTasks);
-    }
-
-    function getFilteredTasksPopup() {
-        const monthFilter = tasksFilterMonth.value;
-        const statusFilter = tasksFilterStatus.value;
-        const priorityFilter = tasksFilterPriority.value;
-        const categoryFilter = tasksFilterCategory.value;
-
-        let filtered = [...todos];
-
-        if (monthFilter !== '') {
-            filtered = filtered.filter(task => {
-                const taskMonth = new Date(task.date).getMonth().toString();
-                return taskMonth === monthFilter;
-            });
+    async function renderTasksPopup() {
+        try {
+            const monthFilter = tasksFilterMonth ? tasksFilterMonth.value : '';
+            const statusFilter = tasksFilterStatus ? tasksFilterStatus.value : '';
+            const priorityFilter = tasksFilterPriority ? tasksFilterPriority.value : '';
+            const categoryFilter = tasksFilterCategory ? tasksFilterCategory.value : '';
+            
+            const filters = {};
+            if (monthFilter !== '') {
+                const monthNum = parseInt(monthFilter);
+                const year = new Date().getFullYear();
+                const firstDay = new Date(year, monthNum, 1);
+                const lastDay = new Date(year, monthNum + 1, 0);
+                filters.dueDate = toISO(firstDay);
+            }
+            if (statusFilter !== '') filters.status = statusFilter;
+            if (priorityFilter !== '') filters.priority = priorityFilter;
+            if (categoryFilter !== '') filters.category = categoryFilter;
+            
+            let filtered = todos;
+            
+            if (Object.keys(filters).length > 0) {
+                filtered = filtered.filter(task => {
+                    if (filters.dueDate) {
+                        const taskDate = new Date(task.due_date);
+                        const filterDate = new Date(filters.dueDate);
+                        if (taskDate.getMonth() !== filterDate.getMonth()) return false;
+                    }
+                    if (filters.status && task.status !== filters.status) return false;
+                    if (filters.priority && task.priority !== filters.priority) return false;
+                    if (filters.category && task.category !== filters.category) return false;
+                    return true;
+                });
+            }
+            
+            const total = todos.length;
+            const completed = todos.filter(t => t.status === 'completed').length;
+            const pending = total - completed;
+            const overdue = todos.filter(t => t.status !== 'completed' && new Date(t.due_date + 'T00:00:00') < new Date()).length;
+            
+            if (totalTasks) totalTasks.textContent = total;
+            if (completedTasks) completedTasks.textContent = completed;
+            if (pendingTasks) pendingTasks.textContent = pending;
+            if (overdueTasks) overdueTasks.textContent = overdue;
+            
+            renderFilteredTasksPopup(filtered);
+        } catch (error) {
+            console.error('Error rendering tasks popup:', error);
+            if (tasksPopupList) {
+                tasksPopupList.innerHTML = `
+                    <div class="no-tasks">
+                        <i class='bx bx-error' style="font-size: 3rem; margin-bottom: 15px; display: block; color: #ff6b6b;"></i>
+                        <p>Gagal memuat data tugas.</p>
+                        <p class="helper-text">Coba refresh halaman.</p>
+                    </div>
+                `;
+            }
         }
-
-        if (statusFilter === 'completed') {
-            filtered = filtered.filter(task => task.completed);
-        } else if (statusFilter === 'pending') {
-            filtered = filtered.filter(task => !task.completed);
-        }
-
-        if (priorityFilter !== '') {
-            filtered = filtered.filter(task => task.priority === priorityFilter);
-        }
-
-        if (categoryFilter !== '') {
-            filtered = filtered.filter(task => task.category === categoryFilter);
-        }
-
-        return filtered;
     }
 
     function renderFilteredTasksPopup(filteredTasks) {
+        if (!tasksPopupList) return;
+        
         tasksPopupList.innerHTML = '';
 
         if (filteredTasks.length === 0) {
@@ -1162,17 +1584,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Group by date
         const tasksByDate = {};
         filteredTasks.forEach(task => {
-            if (!tasksByDate[task.date]) {
-                tasksByDate[task.date] = [];
+            if (!tasksByDate[task.due_date]) {
+                tasksByDate[task.due_date] = [];
             }
-            tasksByDate[task.date].push(task);
+            tasksByDate[task.due_date].push(task);
         });
 
-        // Sort dates
-        const sortedDates = Object.keys(tasksByDate).sort((a, b) => new Date(b) - new Date(a));
+        const sortedDates = Object.keys(tasksByDate).sort((a, b) => new Date(a) - new Date(b));
 
         sortedDates.forEach(date => {
             const tasks = tasksByDate[date];
@@ -1200,25 +1620,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createTaskPopupElement(task) {
-        const isOverdue = !task.completed && new Date(task.date) < new Date();
-        const updatedIndicator = task.updatedAt ? '<span class="task-popup-chip">Diupdate</span>' : '';
+        const isOverdue = task.status !== 'completed' && new Date(task.due_date + 'T00:00:00') < new Date();
+        const updatedIndicator = task.updated_at ? '<span class="task-popup-chip">Diupdate</span>' : '';
         
         const el = document.createElement('div');
-        el.className = `task-popup-item ${task.completed ? 'completed' : ''}`;
+        el.className = `task-popup-item ${task.status === 'completed' ? 'completed' : ''}`;
 
         el.innerHTML = `
-            <div class="task-popup-checkbox ${task.completed ? 'checked' : ''}" data-id="${task.id}"></div>
+            <div class="task-popup-checkbox ${task.status === 'completed' ? 'checked' : ''}" 
+                 data-id="${task.id}" 
+                 data-status="${task.status}">
+                 ${task.status === 'completed' ? '✓' : ''}
+            </div>
             <div class="task-popup-content">
-                <div class="task-popup-title">${escapeHtml(task.text)}</div>
+                <div class="task-popup-title">${escapeHtml(task.title || 'No title')}</div>
+                ${task.description ? `<div class="task-popup-description">${escapeHtml(task.description)}</div>` : ''}
                 <div class="task-popup-meta">
-                    <span class="task-popup-chip">${categoryLabels[task.category]}</span>
-                    <span class="task-popup-chip">${priorityLabels[task.priority]}</span>
+                    <span class="task-popup-chip ${task.status}">${statusLabels[task.status] || task.status || 'todo'}</span>
+                    <span class="task-popup-chip">${categoryLabels[task.category] || task.category || 'lainnya'}</span>
+                    <span class="task-popup-chip">${priorityLabels[task.priority] || task.priority || 'normal'}</span>
                     ${isOverdue ? '<span class="task-popup-chip" style="background:#ffcccc;">Terlambat</span>' : ''}
-                    <span class="task-popup-chip">${formatDateDisplay(task.date)}</span>
+                    <span class="task-popup-chip">${formatDateDisplay(task.due_date) || 'No date'}</span>
                     ${updatedIndicator}
                 </div>
             </div>
             <div class="todo-actions">
+                ${task.status !== 'completed' ? `
+                    <button class="status-btn" data-id="${task.id}" data-status="in_progress" title="Tandai sedang dikerjakan">
+                        <i class='bx bx-play'></i>
+                    </button>
+                    <button class="status-btn complete-btn" data-id="${task.id}" data-status="completed" title="Tandai selesai">
+                        <i class='bx bx-check'></i>
+                    </button>
+                ` : `
+                    <button class="status-btn" data-id="${task.id}" data-status="todo" title="Tandai belum mulai">
+                        <i class='bx bx-undo'></i>
+                    </button>
+                `}
                 <button class="edit-btn" data-id="${task.id}" title="Edit tugas">
                     <i class='bx bx-edit'></i>
                 </button>
@@ -1233,46 +1671,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function attachTasksPopupEvents() {
         document.querySelectorAll('.task-popup-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = checkbox.dataset.id;
-                const task = todos.find(t => t.id === id);
-                if (task) {
-                    task.completed = !task.completed;
-                    saveTodos();
-                    renderTasksPopup();
-                    renderCalendar();
-                    renderTodos();
-                }
-            });
+            checkbox.addEventListener('click', handleCheckboxClick);
+        });
+
+        document.querySelectorAll('.task-popup-item .status-btn').forEach(btn => {
+            btn.addEventListener('click', handleStatusButtonClick);
         });
 
         document.querySelectorAll('.task-popup-item .delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = btn.dataset.id;
-                const task = todos.find(t => t.id === id);
-                if (confirm(`Hapus tugas "${task.text}"?`)) {
-                    todos = todos.filter(t => t.id !== id);
-                    saveTodos();
-                    renderTasksPopup();
-                    renderCalendar();
-                    renderTodos();
-                }
-            });
+            btn.addEventListener('click', handleDeleteClick);
         });
         
-        // Edit in tasks popup
         document.querySelectorAll('.task-popup-item .edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = btn.dataset.id;
-                showEditModal(id);
-            });
+            btn.addEventListener('click', handleEditClick);
         });
     }
 
-    // Reminder Functions
+    // Reminder Functions - DIPERBAIKI
     function checkUpcomingDeadlines() {
         const now = new Date();
         const tomorrow = new Date(now);
@@ -1280,8 +1695,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const tomorrowStr = toISO(tomorrow);
         
         const urgent = todos.filter(task => {
-            if (task.completed) return false;
-            return task.date === tomorrowStr;
+            if (task.status === 'completed') return false;
+            return task.due_date === tomorrowStr;
         }).map(task => ({
             ...task,
             daysLeft: 1
@@ -1296,22 +1711,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Utility Functions
-    function saveTodos() {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-        } catch (error) {
-            console.error('Gagal menyimpan data:', error);
-            notificationManager.showMessage('Gagal menyimpan data', 'error', 3000);
-        }
-    }
-
     function escapeHtml(str) {
+        if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
 
     function formatDateDisplay(dateStr) {
+        if (!dateStr) return 'No date';
         try {
             const date = new Date(dateStr + 'T00:00:00');
             return date.toLocaleDateString('id-ID', {
@@ -1321,6 +1729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric'
             });
         } catch (e) {
+            console.error('Error formatting date:', e);
             return dateStr;
         }
     }
@@ -1330,18 +1739,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check reminders periodically
     setInterval(updateReminders, 5 * 60 * 1000);
-
-    // Sync across tabs
-    window.addEventListener('storage', (e) => {
-        if (e.key === STORAGE_KEY) {
-            const newTodos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            if (JSON.stringify(newTodos) !== JSON.stringify(todos)) {
-                todos = newTodos;
-                renderCalendar();
-                renderTodos();
-                updateReminders();
-                notificationManager.showMessage('Data diperbarui', 'info', 2000);
-            }
+    
+    // Debug functions
+    window.debug = {
+        apiService,
+        todos: () => todos,
+        loadTasks,
+        addTodo: (title, date) => {
+            if (taskInput) taskInput.value = title || 'Test Task';
+            if (dueDateInput) dueDateInput.value = date || new Date().toISOString().split('T')[0];
+            addTodo();
+        },
+        updateTaskStatus,
+        renderTodos,
+        selectedDate: () => selectedDate,
+        testDate: function(dateStr) {
+            console.log('🧪 Testing date:', dateStr);
+            selectedDate = dateStr;
+            if (dueDateInput) dueDateInput.value = dateStr;
+            renderTodos();
         }
-    });
+    };
+    
+    console.log('✅ App loaded successfully');
 });

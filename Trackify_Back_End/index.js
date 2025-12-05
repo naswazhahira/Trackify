@@ -22,6 +22,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const goalsRoutes = require('./src/routes/goalsRoutes');
 const studysessionRoutes = require('./src/routes/studysessionRoutes');
 const dailySummaryRoutes = require('./src/routes/dailySummaryRoutes');
+const taskRoutes = require('./src/routes/taskRoutes');
 
 
 // Register routes
@@ -29,6 +30,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/goals', goalsRoutes);
 app.use('/api/study-sessions', studysessionRoutes);
 app.use('/api/daily-summaries', dailySummaryRoutes);
+app.use('/api/task', taskRoutes);
 
 
 // Route testing awal
