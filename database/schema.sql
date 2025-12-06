@@ -1,15 +1,5 @@
--- Hapus terlebih dahulu database lama agar tidak bentrok
-DROP DATABASE IF EXISTS trackify_db;
-DROP USER IF EXISTS trackify_user;
-
--- Buat user dan database
-CREATE USER trackify_user WITH PASSWORD 'password123';
-CREATE DATABASE trackify_db OWNER trackify_user;
-
--- Berikan hak akses
-GRANT ALL PRIVILEGES ON DATABASE trackify_db TO trackify_user;
-
--- Pindahkan koneksi ke database trackify_db
+-- Init schema for Trackify in current database (POSTGRES_DB)
+-- Assumes DB and user are created by container env vars.
 
 -- Buat struktur tabel (entitas)
 CREATE TABLE IF NOT EXISTS users (
