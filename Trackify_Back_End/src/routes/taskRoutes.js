@@ -11,6 +11,13 @@ router.post('/', authenticateToken, taskController.createTask);
 // Ambil semua tasks user 
 router.get('/', authenticateToken, taskController.getUserTasks);
 
+// Alias untuk get all tasks (untuk compatibility)
+router.get('/get-all-tasks', authenticateToken, taskController.getUserTasks);
+
+
+// Ambil tasks hari ini
+router.get('/get-tasks-today', authenticateToken, taskController.getTodayTasks);
+
 
 // Ambil tasks berdasarkan tanggal
 router.get('/date/:date', authenticateToken, taskController.getTasksByDate);
