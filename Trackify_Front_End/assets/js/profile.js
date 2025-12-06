@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ========== VARIABLES ==========
     let currentUser = null;
-    const API_BASE = 'http://localhost:5000/api/users';
+    const API_BASE = 'http://localhost:3000/api/users';
     let cropper = null;
    
     // ========== INITIALIZATION ==========
