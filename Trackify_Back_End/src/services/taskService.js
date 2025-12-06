@@ -1,75 +1,46 @@
 const pool = require('../config/db');
 
-// Buat task baru - DIPERBAIKI
+// Buat task baru - DIPERBAIKI: Simpan tanggal sebagai DATE bukan TIMESTAMP
 async function createTask(userId, title, description, dueDate, priority, category, status = 'todo') {
     console.log('📝 [SERVICE] Creating task...');
     console.log('   User ID:', userId);
     console.log('   Title:', title);
     console.log('   Due Date Received:', dueDate, 'Type:', typeof dueDate);
     
-    // NORMALISASI TANGGAL KE UTC MIDNIGHT
-    let normalizedDueDate;
+    // Validasi dan normalisasi tanggal ke format YYYY-MM-DD
+    let dateString;
     
     try {
         if (typeof dueDate === 'string') {
-            // Format 1: YYYY-MM-DD
+            // Format YYYY-MM-DD
             if (dueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                console.log('   Format: YYYY-MM-DD');
-                // Buat Date object dengan waktu 00:00:00 UTC
-                const [year, month, day] = dueDate.split('-').map(Number);
-                normalizedDueDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+                dateString = dueDate;
             }
-            // Format 2: ISO String (YYYY-MM-DDTHH:mm:ss.sssZ)
+            // Format ISO String (YYYY-MM-DDTHH:mm:ss.sssZ)
             else if (dueDate.includes('T')) {
-                console.log('   Format: ISO String');
-                const dateObj = new Date(dueDate);
-                if (isNaN(dateObj.getTime())) {
-                    throw new Error('Invalid date format');
-                }
-                normalizedDueDate = new Date(Date.UTC(
-                    dateObj.getUTCFullYear(),
-                    dateObj.getUTCMonth(),
-                    dateObj.getUTCDate(),
-                    0, 0, 0, 0
-                ));
+                dateString = dueDate.split('T')[0];
             }
-            // Format 3: Lainnya
             else {
-                console.log('   Format: Other string');
+                // Coba parse sebagai Date
                 const dateObj = new Date(dueDate);
                 if (isNaN(dateObj.getTime())) {
                     throw new Error('Invalid date format');
                 }
-                normalizedDueDate = new Date(Date.UTC(
-                    dateObj.getUTCFullYear(),
-                    dateObj.getUTCMonth(),
-                    dateObj.getUTCDate(),
-                    0, 0, 0, 0
-                ));
+                const year = dateObj.getFullYear();
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                dateString = `${year}-${month}-${day}`;
             }
         } else if (dueDate instanceof Date) {
-            console.log('   Format: Date object');
-            normalizedDueDate = new Date(Date.UTC(
-                dueDate.getUTCFullYear(),
-                dueDate.getUTCMonth(),
-                dueDate.getUTCDate(),
-                0, 0, 0, 0
-            ));
+            const year = dueDate.getFullYear();
+            const month = String(dueDate.getMonth() + 1).padStart(2, '0');
+            const day = String(dueDate.getDate()).padStart(2, '0');
+            dateString = `${year}-${month}-${day}`;
         } else {
             throw new Error('Invalid dueDate format');
         }
         
-        console.log('   Normalized Due Date (UTC):', normalizedDueDate.toISOString());
-        console.log('   Normalized Due Date (Local ID):', normalizedDueDate.toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta',
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        }));
+        console.log('   Normalized Due Date String:', dateString);
         
         const query = `
             INSERT INTO tasks(user_id, title, description, due_date, priority, category, status)
@@ -77,47 +48,40 @@ async function createTask(userId, title, description, dueDate, priority, categor
             RETURNING *;
         `;
         
-        const values = [userId, title, description || '', normalizedDueDate, priority || 'normal', category || 'kuliah', status];
+        const values = [userId, title, description || '', dateString, priority || 'normal', category || 'kuliah', status];
         
         console.log('   Executing query...');
         const { rows } = await pool.query(query, values);
         console.log('   ✅ Task created successfully');
         console.log('   Stored due_date:', rows[0].due_date);
-        console.log('   Stored due_date (ISO):', new Date(rows[0].due_date).toISOString());
         
-        return rows[0];
+        return {
+            ...rows[0],
+            due_date_formatted: dateString
+        };
     } catch (error) {
         console.error('❌ [SERVICE] Error in createTask:', error);
         throw error;
     }
 }
 
-// Ambil tasks berdasarkan tanggal - DIPERBAIKI
+// Ambil tasks berdasarkan tanggal - DIPERBAIKI: Query DATE langsung
 async function findTasksByDate(userId, date) {
     console.log('📅 [SERVICE] Finding tasks by date...');
     console.log('   User ID:', userId);
     console.log('   Request Date:', date);
     
     try {
-        // Parse tanggal yang diminta
-        const [year, month, day] = date.split('-').map(Number);
+        // Validasi format tanggal
+        if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            throw new Error('Invalid date format. Expected YYYY-MM-DD');
+        }
         
-        // Buat range tanggal untuk query
-        const startDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-        const endDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
-        
-        console.log('   Query Range:');
-        console.log('     Start (UTC):', startDate.toISOString());
-        console.log('     End (UTC):', endDate.toISOString());
-        console.log('     Start (WIB):', new Date(startDate.getTime() + 7 * 60 * 60 * 1000).toISOString());
-        console.log('     End (WIB):', new Date(endDate.getTime() + 7 * 60 * 60 * 1000).toISOString());
-        
-        // Query menggunakan range tanggal
+        // Query langsung dengan DATE comparison
         const query = `
             SELECT * FROM tasks
             WHERE user_id = $1 
-            AND due_date >= $2 
-            AND due_date <= $3
+            AND due_date = $2
             ORDER BY
                 CASE priority
                     WHEN 'high' THEN 1
@@ -127,20 +91,19 @@ async function findTasksByDate(userId, date) {
                 created_at ASC;
         `;
         
-        const values = [userId, startDate, endDate];
+        const values = [userId, date];
         
         console.log('   Executing query...');
         const { rows } = await pool.query(query, values);
         console.log(`   📊 Found ${rows.length} tasks for date ${date}`);
         
-        // Format tanggal untuk response
-        const formattedRows = rows.map(task => {
-            const taskDate = new Date(task.due_date);
-            return {
-                ...task,
-                due_date_formatted: taskDate.toISOString().split('T')[0] // YYYY-MM-DD
-            };
-        });
+        // Format response
+        const formattedRows = rows.map(task => ({
+            ...task,
+            due_date_formatted: task.due_date instanceof Date 
+                ? task.due_date.toISOString().split('T')[0]
+                : task.due_date
+        }));
         
         return formattedRows;
     } catch (error) {
@@ -201,28 +164,27 @@ async function findTaskById(taskId) {
     return rows[0];
 }
 
-// Update task - DIPERBAIKI
+// Update task - DIPERBAIKI: Gunakan DATE string
 async function updateTask(taskId, title, description, dueDate, priority, category, status) {
     console.log('✏️ [SERVICE] Updating task:', taskId);
     console.log('   New Due Date:', dueDate);
     
-    // Normalisasi tanggal sama seperti createTask
-    let normalizedDueDate;
+    // Normalisasi tanggal ke format YYYY-MM-DD
+    let dateString;
     
     if (typeof dueDate === 'string' && dueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dueDate.split('-').map(Number);
-        normalizedDueDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+        dateString = dueDate;
+    } else if (typeof dueDate === 'string' && dueDate.includes('T')) {
+        dateString = dueDate.split('T')[0];
     } else {
         const dateObj = new Date(dueDate);
-        normalizedDueDate = new Date(Date.UTC(
-            dateObj.getUTCFullYear(),
-            dateObj.getUTCMonth(),
-            dateObj.getUTCDate(),
-            0, 0, 0, 0
-        ));
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        dateString = `${year}-${month}-${day}`;
     }
     
-    console.log('   Normalized Due Date:', normalizedDueDate.toISOString());
+    console.log('   Normalized Due Date String:', dateString);
     
     const query = `
         UPDATE tasks
@@ -237,15 +199,14 @@ async function updateTask(taskId, title, description, dueDate, priority, categor
         RETURNING *;
     `;
     
-    const values = [title, description || '', normalizedDueDate, priority || 'normal', category || 'kuliah', status || 'todo', taskId];
+    const values = [title, description || '', dateString, priority || 'normal', category || 'kuliah', status || 'todo', taskId];
     
     const { rows } = await pool.query(query, values);
     
     if (rows[0]) {
-        const taskDate = new Date(rows[0].due_date);
         return {
             ...rows[0],
-            due_date_formatted: taskDate.toISOString().split('T')[0]
+            due_date_formatted: dateString
         };
     }
     return rows[0];
