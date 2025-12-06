@@ -6,8 +6,8 @@ const authenticateToken = require('../middlewares/authMiddleware');
 // Create folder
 router.post("/", authenticateToken, repository_foldersController.createFolder);
 
-// Get all folders by user
-router.get("/user/:userId", authenticateToken, repository_foldersController.getFolders);
+// Get all folders by user (from JWT token)
+router.get("/", authenticateToken, repository_foldersController.getFolders);
 
 // Update folder
 router.put("/:id", authenticateToken, repository_foldersController.updateFolder);
