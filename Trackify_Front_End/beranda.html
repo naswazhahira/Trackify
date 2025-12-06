@@ -98,22 +98,8 @@
           <h3><i class="fas fa-tasks"></i> To-Do List</h3>
           <a href="agenda.html" class="view-all">Lihat Semua</a>
         </div>
-        <div class="todo-list">
-          <div class="todo-item">
-            <input type="checkbox" id="todo1">
-            <label for="todo1">Lab Pemrograman Web</label>
-            <span class="todo-time">Hari ini</span>
-          </div>
-          <div class="todo-item">
-            <input type="checkbox" id="todo2">
-            <label for="todo2">Basis Data</label>
-            <span class="todo-time">Besok</span>
-          </div>
-          <div class="todo-item">
-            <input type="checkbox" id="todo3">
-            <label for="todo3">UTS Struktur Data</label>
-            <span class="todo-time">2 hari</span>
-          </div>
+        <div class="todo-list" id="todoList">
+          <!-- Tasks will be populated by JavaScript -->
           <div class="no-tasks" style="display: none;">
             <p>Tidak ada tugas hari ini</p>
           </div>
@@ -124,32 +110,13 @@
       <!-- Schedule Card -->
       <div class="dashboard-card schedule-card">
         <div class="card-header">
-          <h3><i class="fas fa-clock"></i> Jadwal</h3>
+          <h3><i class="fas fa-clock"></i> Jadwal Hari Ini</h3>
           <a href="agenda.html" class="view-all">Lihat Semua</a>
         </div>
-        <div class="schedule-list">
-          <div class="schedule-item">
-            <div class="schedule-time">
-              <span class="time">10:30</span>
-              <span class="duration">2 jam 30 menit</span>
-            </div>
-            <div class="schedule-info">
-              <h4>Basis Data</h4>
-              <p>D-106</p>
-            </div>
-          </div>
-          <div class="schedule-item">
-            <div class="schedule-time">
-              <span class="time">13:50</span>
-              <span class="duration">1 jam 40 menit</span>
-            </div>
-            <div class="schedule-info">
-              <h4>Wirausaha Digital</h4>
-              <p>D-101</p>
-            </div>
-          </div>
+        <div class="schedule-list" id="scheduleList">
+          <!-- Schedule will be populated by JavaScript -->
           <div class="no-schedule" style="display: none;">
-            <p>Tidak ada jadwal</p>
+            <p>Tidak ada jadwal hari ini</p>
           </div>
         </div>
       </div>
@@ -162,69 +129,21 @@
               <a href="fokus.html" class="view-all">Lihat Detail</a>
           </div>
           <div class="progress-content">
-              <div class="progress-chart">
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 60%;"></div>
-                      </div>
-                      <span class="bar-label">Sen</span>
-                      <span class="bar-value">3 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 80%;"></div>
-                      </div>
-                      <span class="bar-label">Sel</span>
-                      <span class="bar-value">4 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 40%;"></div>
-                      </div>
-                      <span class="bar-label">Rab</span>
-                      <span class="bar-value">2 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 90%;"></div>
-                      </div>
-                      <span class="bar-label">Kam</span>
-                      <span class="bar-value">5 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 70%;"></div>
-                      </div>
-                      <span class="bar-label">Jum</span>
-                      <span class="bar-value">4 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 50%;"></div>
-                      </div>
-                      <span class="bar-label">Sab</span>
-                      <span class="bar-value">3 jam</span>
-                  </div>
-                  <div class="chart-bar">
-                      <div class="bar-container">
-                          <div class="bar-fill" style="height: 85%;"></div>
-                      </div>
-                      <span class="bar-label">Min</span>
-                      <span class="bar-value">5 jam</span>
-                  </div>
+              <div class="progress-chart" id="weeklyProgressChart">
+                  <!-- Chart bars will be populated by JavaScript -->
               </div>
               <div class="progress-stats">
                   <div class="stat-item">
-                      <span class="stat-value">12</span>
+                      <span class="stat-value" id="todayStudyTime">0j 0m</span>
+                      <span class="stat-label">Belajar Hari Ini</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-value" id="completedTasks">0</span>
                       <span class="stat-label">Tugas Selesai</span>
                   </div>
                   <div class="stat-item">
-                      <span class="stat-value">3</span>
+                      <span class="stat-value" id="pendingTasks">0</span>
                       <span class="stat-label">Dalam Proses</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-value">85%</span>
-                      <span class="stat-label">Progress</span>
                   </div>
               </div>
           </div>
