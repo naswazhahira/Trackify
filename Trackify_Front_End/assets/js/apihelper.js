@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api/users';
+const API_BASE = 'http://localhost:3000/api/users';
 
 export async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');
