@@ -73,16 +73,18 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
 
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api'; // Sesuaikan dengan URL backend Anda
+const API_BASE_URL = 'http://localhost:3000/api'; // Backend port 5000
 
 
 // Helper functions for API calls
 async function apiCall(endpoint, method = 'GET', data = null) {
     try {
+        const token = localStorage.getItem('token');
         const config = {
             method,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
             }
         };
 
@@ -565,11 +567,9 @@ async function createFolder(name) {
 
 
     try {
-        const userId = getCurrentUserId();
-        console.log('Creating folder:', { userId, name });
+        console.log('Creating folder:', { name });
        
-        const response = await apiCall('/folders', 'POST', {
-            user_id: userId,
+        const response = await apiCall('/repository_folders', 'POST', {
             folder_name: name,
             color: null
         });
@@ -723,8 +723,8 @@ function attachFolderEventHandlers(wrapper, folder) {
         window.repoUI.openConfirm(`Hapus folder "${folder.folder_name || folder.name}"?`, async () => {
             try {
                 // Jika folder punya ID yang bukan local_, coba hapus dari API
-                if (!folder.id.startsWith('local_')) {
-                    await apiCall(`/folders/${folder.id}`, 'DELETE');
+                if (!String(folder.id).startsWith('local_')) {
+                    await apiCall(`/repository_folders/${folder.id}`, 'DELETE');
                 }
                
                 // Hapus dari UI
@@ -812,8 +812,8 @@ async function renameFolder(wrapper, folder) {
 
         try {
             // Jika folder punya ID yang bukan local_, coba update via API
-            if (!folder.id.startsWith('local_')) {
-                const response = await apiCall(`/folders/${folder.id}`, 'PUT', {
+            if (!String(folder.id).startsWith('local_')) {
+                const response = await apiCall(`/repository_folders/${folder.id}`, 'PUT', {
                     folder_name: newName,
                     color: folder.color
                 });
@@ -935,8 +935,65 @@ function initializeExistingFolders() {
 }
 
 
-// saving files - TETAP menggunakan localStorage untuk sekarang
+// saving files - DIUBAH untuk menggunakan API backend
 async function saveFilesToFolder(folderName, files) {
+    console.log('🗂️ saveFilesToFolder called:', { folderName, filesCount: files.length, currentOpenedFolder });
+    
+    if (!folderName || !currentOpenedFolder) {
+        console.error('❌ Missing folderName or currentOpenedFolder');
+        return;
+    }
+    
+    const folderId = currentOpenedFolder.id;
+    console.log('📁 Folder ID:', folderId, 'Type:', typeof folderId);
+    
+    // Cek apakah folder valid (konversi ke string untuk pengecekan)
+    if (!folderId || String(folderId).startsWith('local_')) {
+        // Jika folder hanya ada di localStorage, gunakan localStorage fallback
+        console.warn('⚠️ Folder belum tersimpan di server, menggunakan localStorage');
+        return saveFilesToFolderLocal(folderName, files);
+    }
+    
+    console.log('✅ Folder valid, uploading to backend...');
+
+    // user_id tidak perlu dikirim, sudah dari JWT token di backend
+    
+    for (const file of files) {
+        // size check: skip extremely big files and show toast
+        if (file.size > 6 * 1024 * 1024) { // 6MB
+            window.repoUI.showToast('File terlalu besar (max 6MB) — pilih file lebih kecil');
+            continue;
+        }
+        
+        try {
+            // Convert file to base64
+            const dataUrl = await fileToBase64(file);
+            
+            // Kirim ke backend API
+            const response = await apiCall('/repository_files', 'POST', {
+                folder_id: folderId,
+                file_name: file.name,
+                file_url: dataUrl, // Simpan sebagai data URL untuk sekarang
+                file_type: file.type || 'application/octet-stream',
+                file_size: file.size
+            });
+
+            console.log('File uploaded to server:', response);
+            window.repoUI.showToast(`File "${file.name}" berhasil diupload`);
+            
+        } catch (e) {
+            console.error('Upload error:', e);
+            window.repoUI.showToast('Gagal mengupload file: ' + file.name);
+            
+            // Fallback ke localStorage jika API gagal
+            console.warn('Fallback to localStorage for file:', file.name);
+            await saveFilesToFolderLocal(folderName, [file]);
+        }
+    }
+}
+
+// Fallback function untuk localStorage (tetap pertahankan untuk backward compatibility)
+async function saveFilesToFolderLocal(folderName, files) {
     if (!folderName) return;
     const repo = getRepoFiles();
     if (!repo[folderName]) repo[folderName] = [];
@@ -1088,12 +1145,44 @@ function openFolder(folder) {
 }
 
 
-//render files - TETAP menggunakan localStorage untuk file
-function renderFilesInModal(folder) {
+//render files - DIUBAH untuk load dari backend
+async function renderFilesInModal(folder) {
     const folderName = folder.folder_name || folder.name;
-    const repo = getRepoFiles();
-    const files = repo[folderName] || [];
+    const folderId = folder.id;
     const fileListEl = document.getElementById('fileList');
+    fileListEl.innerHTML = '<li style="text-align:center;padding:20px;list-style:none;color:#666;">Loading files...</li>';
+    
+    let files = [];
+    
+    // Coba load dari backend API dulu (hindari startsWith pada number)
+    const isLocalId = typeof folderId === 'string' && folderId.startsWith('local_');
+    if (folderId && !isLocalId) {
+        try {
+            const response = await apiCall(`/repository_files/${folderId}`, 'GET');
+            console.log('Files from server:', response);
+            
+            if (response && Array.isArray(response)) {
+                files = response.map(f => ({
+                    id: f.id,
+                    name: f.file_name,
+                    type: f.file_type,
+                    uploadedAt: new Date(f.created_at).toLocaleString(),
+                    dataUrl: f.file_url // Asumsi file_url berisi data URL atau URL file
+                }));
+            }
+        } catch (error) {
+            console.error('Error loading files from server:', error);
+            // Fallback ke localStorage
+            console.warn('Using localStorage fallback for files');
+            const repo = getRepoFiles();
+            files = repo[folderName] || [];
+        }
+    } else {
+        // Jika folder lokal, pakai localStorage
+        const repo = getRepoFiles();
+        files = repo[folderName] || [];
+    }
+    
     fileListEl.innerHTML = '';
 
 
@@ -1211,13 +1300,33 @@ function renderFilesInModal(folder) {
 }
 
 
-// delete file - TETAP menggunakan localStorage
-function deleteFileFromFolder(folderName, fileId) {
+// delete file - DIUBAH untuk menghapus dari backend
+async function deleteFileFromFolder(folderName, fileId) {
+    // Cek apakah fileId adalah ID dari server (numerik) atau localStorage (string)
+    const isServerFile = !isNaN(fileId) && Number.isInteger(Number(fileId));
+    
+    if (isServerFile) {
+        // Hapus dari backend
+        try {
+            await apiCall(`/repository_files/${fileId}`, 'DELETE');
+            console.log('File deleted from server:', fileId);
+            window.repoUI.showToast('File dihapus dari server');
+        } catch (error) {
+            console.error('Error deleting file from server:', error);
+            window.repoUI.showToast('Gagal menghapus file dari server');
+            // Tetap hapus dari localStorage sebagai fallback
+        }
+    }
+    
+    // Hapus dari localStorage (untuk backward compatibility)
     const repo = getRepoFiles();
-    if (!repo[folderName]) return;
-    repo[folderName] = repo[folderName].filter(f => f.id !== fileId);
-    saveRepoFiles(repo);
-    renderFilesInModal(currentOpenedFolder);
+    if (repo[folderName]) {
+        repo[folderName] = repo[folderName].filter(f => f.id !== fileId);
+        saveRepoFiles(repo);
+    }
+    
+    // Refresh tampilan
+    await renderFilesInModal(currentOpenedFolder);
     window.repoUI.showToast('File dihapus');
 }
 
@@ -1225,19 +1334,29 @@ function deleteFileFromFolder(folderName, fileId) {
 // hook file input
 if (fileInput) {
     fileInput.addEventListener('change', async (e) => {
+        console.log('📎 File input changed!', e.target.files);
         const files = Array.from(e.target.files || []);
-        if (!files.length) return;
+        console.log('📎 Files array:', files.length, 'files');
+        if (!files.length) {
+            console.log('❌ No files selected');
+            return;
+        }
+        console.log('📁 Current opened folder:', currentOpenedFolder);
         if (!currentOpenedFolder) {
             window.repoUI.showToast('Klik folder dulu untuk memilih tujuan file.');
             fileInput.value = '';
             return;
         }
+        console.log('🚀 Calling saveFilesToFolder...');
         await saveFilesToFolder(currentOpenedFolder.folder_name || currentOpenedFolder.name, files);
+        console.log('✅ saveFilesToFolder completed');
         renderFilesInModal(currentOpenedFolder);
         if (uploadModal) uploadModal.style.display = 'none';
         fileInput.value = '';
         window.repoUI.showToast('File ditambahkan');
     });
+} else {
+    console.error('❌ fileInput element not found!');
 }
 
 
@@ -1379,10 +1498,9 @@ function escapeHtml(s) {
 // Load folders dari backend saat halaman dimuat
 async function loadFoldersFromBackend() {
     try {
-        const userId = getCurrentUserId();
-        console.log('Loading folders for user:', userId);
+        console.log('Loading folders from backend...');
        
-        const response = await apiCall(`/folders/user/${userId}`);
+        const response = await apiCall('/repository_folders');
         console.log('Folders response:', response);
        
         if (Array.isArray(response)) {
