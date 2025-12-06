@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Konstanta API
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'http://localhost:3000/api';
     const API_GOALS = `${API_BASE}/goals`;
     const API_STUDY_SESSIONS = `${API_BASE}/study-sessions`;
     const API_DAILY_SUMMARIES = `${API_BASE}/daily-summaries`; // ✅ TAMBAH INI
@@ -326,20 +326,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // ✅ FUNGSI BARU: Update daily summary dengan total study time
     async function updateDailySummaryStudyTime() {
         try {
-            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            const totalSeconds = await calculateTodaysTotalTime(); // Hitung total waktu hari ini
+            const today = getDateKey(new Date());
+            // Gunakan data backend agar akurat (total sesi hari ini)
+            const backendTotal = await getTodayStudyTimeAPI();
             
             const response = await fetch(`${API_DAILY_SUMMARIES}/update-study-time`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
                     summary_date: today,
-                    total_study_time_seconds: totalSeconds
+                    total_study_time_seconds: backendTotal
                 })
             });
             
             if (!response.ok) throw new Error('Gagal update daily summary study time');
-            console.log('✅ Daily summary study time updated:', totalSeconds);
+            console.log('✅ Daily summary study time updated from backend total:', backendTotal);
         } catch (error) {
             console.error('Error updating daily summary study time:', error);
         }
@@ -348,9 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ✅ FUNGSI BARU: Update daily summary dengan goals completed
     async function updateDailySummaryGoalsCompleted() {
         try {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getDateKey(new Date()); // Pakai getDateKey untuk konsistensi
             const completedGoals = goals.filter(goal => {
-                const goalDate = formatDateForCompare(new Date(goal.target_date));
+                const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
                 return goalDate === today && goal.status === 'completed';
             }).length;
             
@@ -448,6 +449,28 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${year}-${month}-${day}`;
     }
 
+    // ✅ FUNGSI BARU: Parse tanggal string menjadi Date lokal (tanpa UTC shift)
+    function parseDateLocal(dateString) {
+        // Jika sudah Date object, return langsung
+        if (dateString instanceof Date) {
+            return dateString;
+        }
+        
+        // Parse YYYY-MM-DD tanpa UTC shift
+        if (typeof dateString === 'string') {
+            const parts = dateString.split('T')[0].split('-'); // Ambil bagian tanggal saja
+            if (parts.length === 3) {
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1; // Month adalah 0-indexed
+                const day = parseInt(parts[2]);
+                return new Date(year, month, day);
+            }
+        }
+        
+        // Fallback
+        return new Date(dateString);
+    }
+
     // Navigasi tanggal
     function updateDateDisplay() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -497,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Jumlahkan progress aktual dari semua goals
         goals.forEach(goal => {
-            const goalDate = formatDateForCompare(new Date(goal.target_date));
+            const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
             if (goalDate === dateKey) {
                 const goalKey = `${goal.id}_${dateKey}`;
                 total += goalProgress[goalKey] || 0;
@@ -516,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalSeconds = 0;
         
         goals.forEach(goal => {
-            const goalDate = formatDateForCompare(new Date(goal.target_date));
+            const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
             if (goalDate === dateKey) {
                 const goalKey = `${goal.id}_${dateKey}`;
                 totalSeconds += goalProgress[goalKey] || 0;
@@ -534,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Filter goals untuk tanggal yang dipilih
         const todayGoals = goals.filter(goal => {
-            const goalDate = formatDateForCompare(new Date(goal.target_date));
+            const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
             return goalDate === dateKey && goal.status !== 'deleted';
         });
 
@@ -729,6 +752,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // ✅ UPDATE DAILY SUMMARY SETELAH TIMER BERHENTI
                 await updateDailySummaryStudyTime();
                 
+                // ✅ REFRESH GRAFIK MINGGUAN SETELAH UPDATE DATABASE
+                await generateWeeklyChart();
+                
             } catch (error) {
                 console.error('❌ Error stopping timer:', error);
                 console.error('Error details:', error.message);
@@ -843,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Jumlahkan progress aktual dari semua goals untuk tanggal ini
             goals.forEach(goal => {
-                const goalDate = formatDateForCompare(new Date(goal.target_date));
+                const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
                 if (goalDate === dateKey) {
                     const goalKey = `${goal.id}_${dateKey}`;
                     totalSeconds += goalProgress[goalKey] || 0;
@@ -894,6 +920,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 saveGoalProgress();
+                
+                // ✅ UPDATE DATABASE DAN REFRESH GRAFIK
+                await updateDailySummaryStudyTime();
+                await generateWeeklyChart();
+                
                 closeModals();
             }
         } else {
@@ -902,22 +933,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function closeModals() {
+    async function closeModals() {
         if (isTimerRunning) {
             clearInterval(timerInterval);
             isTimerRunning = false;
             
             // Complete study session
             if (currentStudySession) {
-                completeStudySessionAPI(currentStudySession.id)
-                    .then(() => {
-                        currentStudySession = null;
-                        console.log('Session completed on modal close');
-                    })
-                    .catch(err => console.error('Error completing session:', err));
+                try {
+                    await completeStudySessionAPI(currentStudySession.id);
+                    currentStudySession = null;
+                    console.log('Session completed on modal close');
+                } catch (err) {
+                    console.error('Error completing session:', err);
+                }
             }
             
             saveGoalProgress();
+            
+            // ✅ UPDATE DATABASE DAN REFRESH GRAFIK
+            await updateDailySummaryStudyTime();
+            await generateWeeklyChart();
         } else {
             saveGoalProgress();
         }
@@ -1000,8 +1036,22 @@ document.addEventListener('DOMContentLoaded', function() {
             date.setDate(today.getDate() - i);
             const dateKey = getDateKey(date);
             
-            // Cari summary untuk tanggal ini
-            const summary = summaries.find(s => s.summary_date === dateKey);
+            // Cari summary untuk tanggal ini (normalisasi tipe summary_date)
+            const summary = summaries.find(s => {
+                let sDateStr;
+                if (typeof s.summary_date === 'string') {
+                    // Sudah string seperti 'YYYY-MM-DD'
+                    sDateStr = s.summary_date.split('T')[0];
+                } else if (s.summary_date instanceof Date) {
+                    sDateStr = formatDateForCompare(s.summary_date);
+                } else if (s.summary_date) {
+                    // Bisa jadi objek Date dari pg: normalisasi via new Date()
+                    sDateStr = formatDateForCompare(new Date(s.summary_date));
+                } else {
+                    sDateStr = '';
+                }
+                return sDateStr === dateKey;
+            });
             
             weeklyData[dateKey] = {
                 date: date,
@@ -1028,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Menghitung total waktu berdasarkan progress aktual
             let totalSeconds = 0;
             goals.forEach(goal => {
-                const goalDate = formatDateForCompare(new Date(goal.target_date));
+                const goalDate = formatDateForCompare(parseDateLocal(goal.target_date));
                 if (goalDate === dateKey) {
                     const goalKey = `${goal.id}_${dateKey}`;
                     totalSeconds += goalProgress[goalKey] || 0;
