@@ -338,6 +338,35 @@ async function filterTasks(req, res) {
     }
 }
 
+// Get today's tasks
+async function getTodayTasks(req, res) {
+    try {
+        console.log('📅 [CONTROLLER] getTodayTasks called');
+        const userId = req.user.id;
+        
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        
+        console.log('   Today:', todayStr);
+        console.log('   📞 Calling service...');
+        
+        const tasks = await taskService.findTasksByDate(userId, todayStr);
+        
+        console.log(`   ✅ Found ${tasks.length} tasks for today`);
+        return res.status(200).json({
+            message: 'Tasks hari ini berhasil diambil.',
+            tasks: tasks
+        });
+    } catch (err) {
+        console.error('❌ [CONTROLLER] Error in getTodayTasks:', err);
+        return res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = {
     createTask,
     getUserTasks,
@@ -347,5 +376,6 @@ module.exports = {
     deleteTask,
     getTaskStats,
     searchTasks,
-    filterTasks
+    filterTasks,
+    getTodayTasks
 };
