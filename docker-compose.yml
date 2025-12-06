@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: trackify-db
+    environment:
+      POSTGRES_USER: trackify_user
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: trackify_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trackify_user -d trackify_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./Trackify_Back_End
+      dockerfile: Dockerfile
+    container_name: trackify-backend
+    environment:
+      NODE_ENV: production
+      DB_USER: trackify_user
+      DB_PASSWORD: password123
+      DB_NAME: trackify_db
+      DB_HOST: db
+      DB_PORT: "5432"
+      JWT_SECRET: supersecretkey123
+      JWT_EXPIRES_IN: 1h
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Trackify_Front_End
+      dockerfile: Dockerfile
+    container_name: trackify-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
