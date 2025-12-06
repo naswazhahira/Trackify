@@ -3,8 +3,22 @@ const repository_filesService = require('../services/repository_filesService');
 // Upload file
 async function uploadFile(req, res) {
     try {
-        const { folder_id, user_id, file_name, file_url, file_type, file_size } =
-            req.body;
+        const user_id = req.user.id; // Ambil dari JWT token
+        const { folder_id, file_name, file_url, file_type, file_size } = req.body;
+
+        console.log('📤 Uploading file:', {
+            user_id,
+            folder_id,
+            file_name,
+            file_type,
+            file_size
+        });
+
+        if (!folder_id || !file_name || !file_url || !file_type) {
+            return res.status(400).json({ 
+                error: "Missing required fields: folder_id, file_name, file_url, file_type" 
+            });
+        }
 
         const file = await repository_filesService.createFile(
             folder_id,
@@ -12,9 +26,10 @@ async function uploadFile(req, res) {
             file_name,
             file_url,
             file_type,
-            file_size
+            file_size || 0
         );
 
+        console.log('✅ File uploaded successfully:', file.id);
 
         res.status(201).json({
             message: "File uploaded successfully",
@@ -22,7 +37,7 @@ async function uploadFile(req, res) {
         });
     } catch (error) {
         console.error("Upload file error:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error: " + error.message });
     }
 }
 
