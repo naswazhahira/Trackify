@@ -44,9 +44,16 @@ document.addEventListener('keydown', function(event) {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Konfigurasi API
-    const API_BASE_URL = 'http://localhost:5000/api'; // Port 5000
+        const API_BASE_URL = 'http://localhost:3000/api'; // Port 3000
     let todos = [];
-    let selectedDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        // Use local timezone date to avoid UTC shifting to yesterday
+        function localYMD(d = new Date()) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        let selectedDate = localYMD(); // Format: YYYY-MM-DD
     
     // DOM Elements
     const monthYear = document.getElementById('monthYear');
@@ -111,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper functions
     const pad = n => String(n).padStart(2, '0');
     const today = new Date();
-    const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; // local Y-M-D
     
     // URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -176,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             console.log(`📤 API Request: ${url}`, config);
+            console.log('url', url);
 
             try {
                 const response = await fetch(url, config);
@@ -217,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Task endpoints - DIPERBAIKI
         async getTasks() {
             console.log('📋 Getting all tasks...');
-            return this.request('/tasks');
+            return this.request('/task');
         }
 
         async getTasksByDate(date) {
@@ -227,12 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('❌ Invalid date format in getTasksByDate:', date);
                 throw new Error('Format tanggal harus YYYY-MM-DD');
             }
-            return this.request(`/tasks/date/${date}`);
+            return this.request(`/task/date/${date}`);
         }
 
         async getTaskStats() {
             console.log('📊 Getting task stats...');
-            return this.request('/tasks/stats');
+            return this.request('/task/stats');
         }
 
         async createTask(taskData) {
@@ -246,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('📤 Sending to backend:', formattedTaskData);
             
-            return this.request('/tasks', {
+            return this.request('/task', {
                 method: 'POST',
                 body: JSON.stringify(formattedTaskData)
             });
@@ -254,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async updateTask(id, taskData) {
             console.log('✏️ Updating task', id, 'with data:', taskData);
-            return this.request(`/tasks/${id}`, {
+            return this.request(`/task/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(taskData)
             });
@@ -262,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async updateTaskStatus(id, status) {
             console.log('🔄 Updating task status', id, 'to:', status);
-            return this.request(`/tasks/${id}/status`, {
+            return this.request(`/task/${id}/status`, {
                 method: 'PUT',
                 body: JSON.stringify({ status })
             });
@@ -270,14 +278,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async deleteTask(id) {
             console.log('🗑️ Deleting task:', id);
-            return this.request(`/tasks/${id}`, {
+            return this.request(`/task/${id}`, {
                 method: 'DELETE'
             });
         }
 
         async searchTasks(query) {
             console.log('🔍 Searching tasks:', query);
-            return this.request(`/tasks/search?q=${encodeURIComponent(query)}`);
+            return this.request(`/task/search?q=${encodeURIComponent(query)}`);
         }
 
         async filterTasks(filters) {
@@ -290,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const queryParams = new URLSearchParams(cleanFilters).toString();
-            return this.request(`/tasks/filter?${queryParams}`);
+            return this.request(`/task/filter?${queryParams}`);
         }
     }
 
@@ -438,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         eventDate.value = toISO(today);
         
         // Set min date untuk input
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = toISO(new Date());
         dueDateInput.min = todayStr;
         eventDate.min = todayStr;
         if (editDueDate) editDueDate.min = todayStr;
@@ -493,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             // Jika bukan string ISO, coba format langsung
                             const dateObj = new Date(task.due_date);
-                            dueDate = dateObj.toISOString().split('T')[0];
+                            dueDate = toISO(dateObj);
                         }
                     }
                     
@@ -1175,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editCategory.value = todo.category || 'kuliah';
         editStatus.value = todo.status || 'todo';
         
-        editDueDate.min = new Date().toISOString().split('T')[0];
+        editDueDate.min = toISO(new Date());
         
         editModal.classList.add('active');
         editModalOverlay.classList.add('active');
@@ -1747,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTasks,
         addTodo: (title, date) => {
             if (taskInput) taskInput.value = title || 'Test Task';
-            if (dueDateInput) dueDateInput.value = date || new Date().toISOString().split('T')[0];
+            if (dueDateInput) dueDateInput.value = date || toISO(new Date());
             addTodo();
         },
         updateTaskStatus,
