@@ -8,7 +8,7 @@
  * @returns {Promise<Object>} - Hasil response dari server
  */
 async function callApi(endpoint, method = 'GET', data = null) {
-    const baseUrl = 'http://localhost:5000'; 
+    const baseUrl = 'http://localhost:3000'; 
     const url = baseUrl + endpoint;
 
     const options = {
